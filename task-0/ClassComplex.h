@@ -16,6 +16,7 @@ private:
     T imag;
 public:
     Complex_number();
+    Complex_number(R x);
     Complex_number(R x, T y);
 
     template<class U, class V>
@@ -30,6 +31,7 @@ public:
     T get_imag() const;
 
     friend std::ostream& operator<<<R, T>(std::ostream &os, const Complex_number& n);
+    std::string to_string() const;
 
     bool operator==(const Complex_number& rhs);
     bool operator<(const Complex_number& rhs);
@@ -76,6 +78,9 @@ Complex_number<R, T>::Complex_number(){
 }
 
 template <class R, class T>
+Complex_number<R, T>::Complex_number(R x): real(x), imag((long) 0){};
+
+template <class R, class T>
 Complex_number<R, T>::Complex_number(R x, T y): real(x), imag(y){};
 
 
@@ -120,6 +125,14 @@ R Complex_number<R, T>::module_square() const{
     }
     return res;
 }
+
+template<class R, class T>
+std::string Complex_number<R, T>::to_string() const{
+    std::string res("(");
+    res = res + std::to_string(real) + ", " + std::to_string(imag) + ")";
+    return res;
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 // Comparing operations

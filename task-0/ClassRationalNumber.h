@@ -25,6 +25,8 @@ public:
     explicit operator short() const;
 
     friend std::ostream& operator<<(std::ostream &os, const Rational_number& n);
+    friend Rational_number abs(const Rational_number& obj);
+    std::string to_string() const;
 
     friend bool operator==(const Rational_number& lhs, const Rational_number& rhs);
     friend bool operator<(const Rational_number& lhs, const Rational_number& rhs);

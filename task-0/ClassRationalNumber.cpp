@@ -293,6 +293,7 @@ bool operator==(const Rational_number& lhs, const Rational_number& rhs){
 }
 
 bool operator<(const Rational_number& lhs, const Rational_number& rhs){
+    //std::cout << "In operator< for Rational_number, rhs: " << rhs << std::endl;
     if (lhs.is_negative < rhs.is_negative) return false;
     if (lhs.is_negative > rhs.is_negative) return true;
     if (lhs.is_negative == false){
@@ -466,4 +467,20 @@ long long Rational_number::round() const{
         throw 2;        // TODO: make special exception
     long long res = string_to_val<long long>(tmp_res);
     return is_negative ? -res : res;
+}
+
+Rational_number abs(const Rational_number& obj){
+    Rational_number res(obj);
+    res.is_negative = false;
+    return res;
+}
+
+std::string Rational_number::to_string() const{
+    std::string tmp1 = numerator, tmp2 = denominator;
+    std::reverse(tmp1.begin(), tmp1.end()); 
+    std::reverse(tmp2.begin(), tmp2.end());
+    std::cout << tmp1 << ' ' << tmp2 << '\n';
+    std::string res("<");
+    res = res.append(is_negative ? "-" : "").append(tmp1).append("/").append(tmp2).append(">");
+    return res;
 }
