@@ -270,6 +270,17 @@ void Matrix<Complex_number<>>::_clear_fake_vals(){
     }
 }
 
+
+template<>
+void Matrix<Rational_number>::_clear_fake_vals(){
+    Rational_number rat_eps = Rational_number::from_double(eps);
+    for(const auto& elem: values){
+        if (abs(elem.second) < rat_eps)
+            values.erase(elem.first);
+    }
+}
+
+
 template<class T>
 std::string Matrix<T>::to_string(){
     _clear_fake_vals();
