@@ -12,6 +12,7 @@ T max(T a, T b){
     return (a >= b) ? a : b;
 }
 
+// Get v^power
 template <class T>
 T pow(T v, int power){
     T res = 1;
@@ -24,7 +25,8 @@ T pow(T v, int power){
 
 std::string int_to_val_reversed(long int x);
 
-void remove_leading_zeros(std::string& s){      // from reversed number
+// for reversed possitive numbers
+void remove_leading_zeros(std::string& s){      
     while (s.back() == '0' && s.size() > 1 ) s.pop_back();
 }
 
@@ -35,6 +37,7 @@ void _str_to_big_number(std::string& s){
     remove_leading_zeros(s);
 }
 
+// for reversed possitive numbers
 bool operator==(const std::string& lhs, const std::string& rhs){
     if (lhs.size() != rhs.size()) return false;
     for(auto it1 = lhs.rbegin(), it2 = rhs.rbegin(); it1 != lhs.rend() && it2 != rhs.rend(); it1++, it2++){
@@ -43,7 +46,8 @@ bool operator==(const std::string& lhs, const std::string& rhs){
     return true;
 }
 
-bool operator<(const std::string& lhs, const std::string& rhs){     // for reversed possitive numbers
+// for reversed possitive numbers
+bool operator<(const std::string& lhs, const std::string& rhs){
     if (lhs == rhs) return false;
     if (lhs.size() != rhs.size()) {
         return lhs.size() < rhs.size();
@@ -116,7 +120,7 @@ const std::string operator*(const std::string& left, const std::string& right){
     return result;
 }
 
-// shift string number by 1 
+// shift reversed string number by 1 
 void _shift_right(std::string& s){
     if (s.size() == 0) {
         s.push_back('0');
@@ -190,6 +194,7 @@ std::string int_to_val_reversed(long int x){
 }
 
 
+// check if s is integer number
 bool Rational_number::is_number(const std::string& s) const{
     if (s[0] == '-'){  // if negative value
         return !s.empty() && std::find_if(s.begin() + 1,  s.end(), 
