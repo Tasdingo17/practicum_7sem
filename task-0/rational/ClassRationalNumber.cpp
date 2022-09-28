@@ -479,8 +479,45 @@ std::string Rational_number::to_string() const{
     std::string tmp1 = numerator, tmp2 = denominator;
     std::reverse(tmp1.begin(), tmp1.end()); 
     std::reverse(tmp2.begin(), tmp2.end());
-    std::cout << tmp1 << ' ' << tmp2 << '\n';
     std::string res("<");
     res = res.append(is_negative ? "-" : "").append(tmp1).append("/").append(tmp2).append(">");
+    return res;
+}
+
+
+// reversed 10^pow as string 
+std::string power_10(size_t pow){
+    std::string res;
+    res.reserve(pow + 2);   // zeros + 1 + '\0'
+    for (size_t i = 0;  i < pow; i ++){
+        res.push_back('0');
+    }
+    res.push_back('1');
+    return res;
+}
+
+
+Rational_number Rational_number::from_double(double x){
+    char s1[30];    // size for string (14 decimal places before '.' and 15 decimal places after)
+    sprintf(s1,"%.15f", x);
+    std::string str_val(s1);
+    size_t dot_pos = str_val.find('.');
+    size_t denom_place = str_val.size() - dot_pos - 1;  // must be 15
+
+    std::string int_part = std::move(str_val.substr(0, dot_pos));
+    std::string fract_part = std::move(str_val.substr(dot_pos+1));
+
+    Rational_number res;
+    res.is_negative = int_part[0] == '-';
+
+    std::string tmp_denom = power_10(denom_place);
+
+    _str_to_big_number(int_part);
+    _str_to_big_number(fract_part);
+
+    res.numerator = std::move(int_part * tmp_denom + fract_part);
+    res.denominator = std::move(tmp_denom);
+    res.make_canonical();
+
     return res;
 }
