@@ -27,24 +27,6 @@ public:
     }
 };
 
-class Zero_division_rat: public std::exception{
-private:
-    std::string m_error;
-public:
-    Zero_division_rat(const std::string& error, const std::string& denom=std::string{}, 
-                      const std::string& num=std::string{}){
-        if (num.empty() || denom.empty()){
-            m_error = error;
-        } else {
-            m_error = error + num + std::string(" / ") + denom;
-        }
-
-    }
-
-    const char* what() const noexcept override {  
-        return m_error.c_str(); 
-    }
-};
 
 class Out_of_bounds: public std::exception{
 private:

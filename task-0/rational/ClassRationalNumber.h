@@ -16,7 +16,8 @@
  * Operations are performed using long arithmetics (c++ logic).
  * Operations with rational numbers  also can be performed 
  * when integer base type is specified as one of the operands.
- *  Exceptions are stored in ../exceptions/RatNumbersExceptions.hpp
+ *  Exceptions are stored in ../exceptions/RatNumbersExceptions.hpp 
+ * and ../exceptions/CommonExceptions.hpp
 */
 class Rational_number{
 private:

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <limits>
 #include "ClassRationalNumber.h"
+#include "../exceptions/CommonExceptions.hpp"
 #include "../exceptions/RatNumbersExceptions.hpp"
 
 #define BASE 10 
@@ -136,7 +137,7 @@ void _shift_right(std::string& s){
 const std::string operator/(const std::string& left, const std::string& right){
     // no zero division
     if (right == "0") 
-        throw Zero_division_rat("Zero division while processing long numbers as string");
+        throw Zero_division("Zero division while processing long numbers as string");
     if (left < right) return std::string("0");
     std::string b = right;
     std::string result, current;
@@ -215,7 +216,7 @@ Rational_number::Rational_number(): numerator("0"), denominator("1"),
 Rational_number::Rational_number(const std::string& m, const std::string& n){
     if (is_number(m)) numerator = m; else throw Not_a_number("Not a whole number: ", m );
     if (is_number(n)) denominator = n; else throw Not_a_number("Not a whole number: ", n );
-    if (n == "0") throw Zero_division_rat("Denominator is zero in initialization!");
+    if (n == "0") throw Zero_division("Denominator is zero in initialization!");
 
     is_negative = ((numerator[0] == '-') != (denominator[0] == '-')) && (numerator != "0");  // xor
     if (numerator == "0"){
@@ -236,7 +237,7 @@ Rational_number::Rational_number(const char* m, const char* n):
 Rational_number::Rational_number(long int m, long int n){
     is_negative = (m >= 0) != (n > 0);  // xor
     if (n == 0)
-        throw Zero_division_rat("Denominator is zero in initialization!");
+        throw Zero_division("Denominator is zero in initialization!");
     numerator = int_to_val_reversed(m);
     if (m == 0){
         denominator = std::string("1");
@@ -390,7 +391,7 @@ Rational_number operator*(const Rational_number& lhs, const Rational_number& rhs
 
 Rational_number operator/(const Rational_number& lhs, const Rational_number& rhs){
     if (rhs == "0") 
-        throw Zero_division_rat("Zero division: ", rhs.to_string(), lhs.to_string());
+        throw Zero_division("Zero division: ", rhs.to_string(), lhs.to_string());
     Rational_number res;
     res.numerator = lhs.numerator * rhs.denominator;
     res.denominator = rhs.numerator * lhs.denominator;
