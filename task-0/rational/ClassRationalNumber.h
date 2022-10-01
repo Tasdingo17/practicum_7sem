@@ -158,7 +158,7 @@ public:
     /**
      * @brief Get string representation of Rational_number object
      * 
-     * @return std::string, string representation ("numerator/denominator")
+     * @return std::string, string representation ("<numerator/denominator>")
      */
     std::string to_string() const;
 
