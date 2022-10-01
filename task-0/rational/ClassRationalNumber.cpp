@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <limits>
 #include "ClassRationalNumber.h"
+#include "../exceptions/RatNumbersExceptions.hpp"
 
 #define BASE 10 
 #define LONG_MAX 2147483647
@@ -134,7 +135,8 @@ void _shift_right(std::string& s){
 // for reversed possitive numbers
 const std::string operator/(const std::string& left, const std::string& right){
     // no zero division
-    if (right == "0") throw 3;  // TODO: make special exception
+    if (right == "0") 
+        throw Zero_division_rat("Zero division while processing long numbers as string");
     if (left < right) return std::string("0");
     std::string b = right;
     std::string result, current;
@@ -211,11 +213,10 @@ Rational_number::Rational_number(): numerator("0"), denominator("1"),
 
 
 Rational_number::Rational_number(const std::string& m, const std::string& n){
-    numerator = m;
-    denominator = n;
-    if (!is_number(numerator) || !is_number(denominator)) {
-        throw 2;  // TODO: make special exception
-    }
+    if (is_number(m)) numerator = m; else throw Not_a_number("Not a whole number: ", m );
+    if (is_number(n)) denominator = n; else throw Not_a_number("Not a whole number: ", n );
+    if (n == "0") throw Zero_division_rat("Denominator is zero in initialization!");
+
     is_negative = ((numerator[0] == '-') != (denominator[0] == '-')) && (numerator != "0");  // xor
     if (numerator == "0"){
         denominator = std::string("1");
@@ -234,9 +235,8 @@ Rational_number::Rational_number(const char* m, const char* n):
 
 Rational_number::Rational_number(long int m, long int n){
     is_negative = (m >= 0) != (n > 0);  // xor
-    if (n == 0){
-        throw 2;  // TODO: make special exception
-    }
+    if (n == 0)
+        throw Zero_division_rat("Denominator is zero in initialization!");
     numerator = int_to_val_reversed(m);
     if (m == 0){
         denominator = std::string("1");
@@ -389,7 +389,8 @@ Rational_number operator*(const Rational_number& lhs, const Rational_number& rhs
 }
 
 Rational_number operator/(const Rational_number& lhs, const Rational_number& rhs){
-    if (rhs == "0") throw 1;   // TODO: make special exception
+    if (rhs == "0") 
+        throw Zero_division_rat("Zero division: ", rhs.to_string(), lhs.to_string());
     Rational_number res;
     res.numerator = lhs.numerator * rhs.denominator;
     res.denominator = rhs.numerator * lhs.denominator;
@@ -433,25 +434,28 @@ bool check_bound<long>(const std::string& reversed_str, bool is_negative){
 }
 
 Rational_number::operator int() const{
-    if (denominator != "1") throw 1;    // TODO: make special exception
+    if (denominator != "1") 
+        throw Bad_cast("Bad_cast: denominator is not 1 in ", *this);
     if (!check_bound<int>(numerator, is_negative))
-        throw 2;        // TODO: make special exception
+        throw Out_of_bounds("Out of int bounds: ", *this);
     int res = string_to_val<int>(this->numerator);
     return is_negative ? -res : res;
 }
 
 Rational_number::operator long() const{
-    if (denominator != "1") throw 1;    // TODO: make special exception
+    if (denominator != "1") 
+        throw Bad_cast("Bad_cast: denominator is not 1 in ", *this);
     if (!check_bound<long>(numerator, is_negative))
-        throw 2;        // TODO: make special exception
+        throw Out_of_bounds("Out of long bounds: ", *this);
     long res = string_to_val<long>(this->numerator);
     return is_negative ? -res : res;
 }
 
 Rational_number::operator short() const{
-    if (denominator != "1") throw 1;    // TODO: make special exception
+    if (denominator != "1") 
+        throw Bad_cast("Bad_cast: denominator is not 1 in ", *this);
     if (!check_bound<short>(numerator, is_negative))
-        throw 2;        // TODO: make special exception
+        throw Out_of_bounds("Out of short bounds: ", *this);
     short res = string_to_val<short>(this->numerator);
     return is_negative ? -res : res;
 }
@@ -459,7 +463,7 @@ Rational_number::operator short() const{
 long long Rational_number::floor() const{
     std::string tmp_res = numerator / denominator;
     if (!check_bound<long long>(tmp_res, is_negative))
-        throw 2;        // TODO: make special exception
+        throw Out_of_bounds("floor() is out of long long bounds for ", *this);
     long long res = string_to_val<long long>(tmp_res);
     return is_negative ? -res : res;
 }
@@ -469,7 +473,7 @@ long long Rational_number::round() const{
     bool is_shift = remainder * "2" < denominator;
     if (is_shift) tmp_res = tmp_res + std::string("1");
     if (!check_bound<long long>(tmp_res, is_negative))
-        throw 2;        // TODO: make special exception
+        throw Out_of_bounds("round() is out of long long bounds for ", *this);
     long long res = string_to_val<long long>(tmp_res);
     return is_negative ? -res : res;
 }

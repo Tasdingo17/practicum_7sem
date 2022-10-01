@@ -12,10 +12,11 @@
 /**
  * @brief Class to store rational numbers and perform operation with them.
  * 
- * Numerator and denominator are stored as reversed strings.
+ *  Numerator and denominator are stored as reversed strings.
  * Operations are performed using long arithmetics (c++ logic).
  * Operations with rational numbers  also can be performed 
  * when integer base type is specified as one of the operands.
+ *  Exceptions are stored in ../exceptions/RatNumbersExceptions.hpp
 */
 class Rational_number{
 private:
@@ -39,7 +40,8 @@ public:
      * @param m numerator
      * @param n denumerator
      * 
-     * @throw int TODO
+     * @throw Not_a_number if given string is not a whole number
+     * @throw Zero_division_rat if nominator is zero
      */
     Rational_number(const std::string& m, const std::string& n = "1");
 
@@ -51,7 +53,8 @@ public:
      * @param m numerator
      * @param n denumerator
      * 
-     * @throw int TODO
+     * @throw Not_a_number if given string is not a whole number
+     * @throw Zero_division_rat if nominator is zero
      */
     Rational_number(const char* m, const char* n = "1");
 
@@ -63,7 +66,7 @@ public:
      * @param m numerator
      * @param n denumerator
      * 
-     * @throw int TODO
+     * @throw Zero_division_rat if nominator is zero
      */
     Rational_number(long int x, long int y = 1);
 
@@ -72,7 +75,6 @@ public:
      * 
      * @param other - rational number to copy value from
      * 
-     * @throw int TODO
      */
     Rational_number(const Rational_number& other);
 
@@ -88,7 +90,7 @@ public:
      * 
      * @return floor() result as in math
      * 
-     * @throw int TODO
+     * @throw Out_of_bounds if result is out of long long range
      */
     long long floor() const;
 
@@ -97,7 +99,7 @@ public:
      * 
      * @return round() result as in math
      * 
-     * @throw int TODO
+     * @throw Out_of_bounds if result is out of long long range
      */
     long long round() const; 
 
@@ -105,9 +107,10 @@ public:
      * @brief Explicit cast to int if possible
      * 
      * Possible if: denominator is 1 and fits in type's bound
-     * @return type value 
+     * @return int
      * 
-     * @throw int TODO
+     * @throw Out_of_bounds if result is out of int range
+     * @throw Bad_cast if denominator is not 1s
      */
     explicit operator int() const;
 
@@ -117,7 +120,8 @@ public:
      * Possible if: denominator is 1 and fits in type's bounds
      * @return long 
      * 
-     * @throw int TODO
+     * @throw Out_of_bounds if result is out of long range
+     * @throw Bad_cast if denominator is not 1
      */
     explicit operator long() const;
 
@@ -127,7 +131,8 @@ public:
      * Possible if: denominator is 1 and fits in type's bounds
      * @return  short
      * 
-     * @throw int TODO
+     * @throw Out_of_bounds if result is out of short range
+     * @throw Bad_cast if denominator is not 1
      */
     explicit operator short() const;
 
@@ -263,7 +268,7 @@ public:
      * @param rhs right operand
      * @return Rational_number lhs / rhs
      * 
-     * @throw int TODO, zero division
+     * @throw Zero_division_rat if rhs is zero
      */
     friend Rational_number operator/(const Rational_number& lhs, const Rational_number& rhs);
 
@@ -304,6 +309,7 @@ public:
      * 
      * @param v value to divide on
      * @return Rational_number& 
+     * @throw Zero_division_rat if rhs is zero
      */
     Rational_number& operator/=(const Rational_number& v);
 
