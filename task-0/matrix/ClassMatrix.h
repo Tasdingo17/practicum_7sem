@@ -2,10 +2,14 @@
 #define __ClassMatrix_H__
 
 #include <unordered_map>
+#include <unordered_set>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <cmath>
+
+#include "Matrix_coords.h"
+#include "Matrix_proxy.hpp"
 
 struct pair_hash{
     template <class T1, class T2>
@@ -19,24 +23,44 @@ using coords = std::pair<int, int>;
 template<class T>
 using matr_vals = std::unordered_map<coords, T, pair_hash>;
 
+/**
+ * @brief Class for sparse matrices.
+ * 
+ * Has eps parameter: all values less than eps are considered zero.
+ * There is an opportunity to make slices of matrix.
+ * Possible operations: +, -, *, unar -, ^ is transposing.
+ * Matrix can be parsed out of file and written to file.
+ * 
+ * @tparam T - type of matrix's elements (designed for standard types, Rational_number, Complex_number)
+ */
 template<class T>
 class Matrix{
 private:
     int rows;
     int columns;
     double eps;
-    //T base_val;
     matr_vals<T> values;
+
+    friend class Matrix_proxy<T>;
+    std::unordered_set<Matrix_proxy<T>*> proxies; // all related proxies for a certain matrix
+    void add_proxy(Matrix_proxy<T>* proxy);
+    void remove_proxy(Matrix_proxy<T>* proxy);
+
     void _clear_fake_vals();    // operator() creates members of unordered_set if key is missing
     bool same_shape(const Matrix& other) const;
     matr_vals<T> key_union(const Matrix& other) const;
 public:
-    // unar matrix
     Matrix(int _rows, int _columns, double _eps = 0.001, 
            bool unar = false, bool fill_one = false);
     Matrix(int _rows, int _columns, const matr_vals<T>&  _values, double _eps = 0.001);
     Matrix(const Matrix& other);
     Matrix(Matrix&& other);
+
+    // Constructor from filename (todo: parser)
+    explicit Matrix(const char* file_path);
+
+    // Constructor from proxy
+    explicit Matrix(Matrix_proxy<T> proxy);
 
     Matrix& operator=(const Matrix& other);
     Matrix& operator=(Matrix&& other);
@@ -47,6 +71,7 @@ public:
     Matrix operator~();   // transposion
 
     T& operator()(int i, int j);
+    Matrix_proxy<T> operator[](const Matrix_coords& coords);
     int size();   // number of elems in values
     std::string to_string();
 };
@@ -62,10 +87,12 @@ Matrix<T>::Matrix(int _rows, int _columns, double _eps, bool unar, bool fill_one
     if (unar)
         for (int i = 0; i < std::min(rows, columns); i++)
             values[{i, i}] = T(1);
-    if (fill_one)
+    if (fill_one){
+        values.reserve( rows * columns );
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < columns; j++)
-                values[{i, j}] = T(1);
+                values[{i, j}] = std::move(T(1));
+    }
 };
 
 
@@ -221,6 +248,12 @@ Matrix<T> Matrix<T>::operator~(){
     return copy;
 }
 
+template<class T>
+Matrix_proxy<T> Matrix<T>::operator[](const Matrix_coords& coords){
+    Matrix_proxy<T> res(coords, *this);
+    return res;
+}
+
 //////////////////////////////////
 
 
@@ -316,6 +349,16 @@ std::string Matrix<Complex_number<>>::to_string(){
               std::to_string(elem.first.second) + "   " + elem.second.to_string();
     }
     return res;
+}
+
+template<class T>
+void Matrix<T>::add_proxy(Matrix_proxy<T>* proxy){
+    proxies.insert(proxy);
+}
+
+template<class T>
+void Matrix<T>::remove_proxy(Matrix_proxy<T>* proxy) {
+    proxies.erase(proxy);
 }
 
 //////////////////////////////////

@@ -32,7 +32,9 @@ set(Complex    complex/ClassComplex.h
    )
 
 set(Matrix     matrix/ClassMatrix.h
-               #matrix/Matrix_slice.hpp
+               matrix/Matrix_coords.h
+               matrix/Matrix_coords.cpp
+               matrix/Matrix_proxy.hpp
    )
 
 add_library( Task0 ${Rational_number} ${Complex} ${Matrix} ${Exceptions} )
