@@ -283,7 +283,8 @@ Matrix<T> Matrix<T>::operator~(){
 
 template<class T>
 Matrix_proxy<T> Matrix<T>::operator[](const Matrix_coords& coords){
-    if (coords.has({rows, columns})){
+    if (coords.has({rows, columns}) &&
+        coords.get_right_x() != -1 && coords.get_right_y() != -1){
         throw 3;       // TODO: exceptions out of range
     }
     return Matrix_proxy<T>(*this, coords);

@@ -3,7 +3,7 @@
 
 #include <utility>
 #include <string>
-#include <ostream>
+#include <iostream>
 
 using coords = std::pair<int, int>;
 
@@ -18,7 +18,7 @@ private:
     template<class T>
     friend class Matrix_proxy;
 public:
-    Matrix_coords();    // default ({-1, -1}, {-1, -1})
+    Matrix_coords();    // default ({0, 0}, {-1, -1})
     Matrix_coords(const coords& left);  // call Matrix_coords(left, left)
     Matrix_coords(const coords& left, const coords& right);
     Matrix_coords(const Matrix_coords& other);
@@ -31,6 +31,11 @@ public:
 
     // check if dot belongs to Matrix_coords
     bool has(const coords& dot) const;
+
+    int get_right_x() const;
+    int get_right_y() const;
+    int get_left_x() const;
+    int get_left_y() const;
 };
 
 //////////////////////////////////////////////////////////////////////////////////

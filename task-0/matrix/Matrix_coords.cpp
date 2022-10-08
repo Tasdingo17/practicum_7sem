@@ -8,7 +8,7 @@ bool Matrix_coords::is_consistent() const{
 }
 
 Matrix_coords::Matrix_coords():
-    left_x(-1), left_y(-1), right_x(-1), right_y(-1) {};
+    left_x(0), left_y(0), right_x(-1), right_y(-1) {};
 
 Matrix_coords::Matrix_coords(const coords& left, const coords& right){
     left_x = left.first;
@@ -65,6 +65,22 @@ bool Matrix_coords::has(const coords& dot) const{
     bool is_bottom_ok = dot.second <= right_y || right_y == -1;
     bool is_right_ok = dot.first <= right_x || right_x == -1;
     return is_top_ok && is_bottom_ok && is_left_ok && is_right_ok;
+}
+
+int Matrix_coords::get_left_x() const{
+    return left_x;
+}
+
+int Matrix_coords::get_left_y() const{
+    return left_y;
+}
+
+int Matrix_coords::get_right_x() const{
+    return right_x;
+}
+
+int Matrix_coords::get_right_y() const{
+    return right_y;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
