@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <map>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -55,12 +56,13 @@ public:
     Matrix(int _rows, int _columns, const matr_vals<T>&  _values, double _eps = 0.001);
     Matrix(const Matrix& other);
     Matrix(Matrix&& other);
+    ~Matrix();
 
     // Constructor from filename (todo: parser)
     explicit Matrix(const char* file_path);
 
     // Constructor from proxy
-    explicit Matrix(Matrix_proxy<T> proxy);
+    Matrix(const Matrix_proxy<T>& proxy);
 
     Matrix& operator=(const Matrix& other);
     Matrix& operator=(Matrix&& other);
@@ -71,12 +73,20 @@ public:
     Matrix operator~();   // transposion
 
     T& operator()(int i, int j);
+    T& operator()(const coords& pos);
     Matrix_proxy<T> operator[](const Matrix_coords& coords);
+    Matrix_proxy<T> operator[](const Matrix_row_coord& row);
+    Matrix_proxy<T> operator[](const Matrix_column_coord& row);
     int size();   // number of elems in values
     std::string to_string();
+    void set_eps(double new_eps);
+
+    std::unordered_map<coords, T> get_submatrix_vals(const Matrix_coords& range);    // for matrix
+    std::map<int, T> get_row_vals(int idx);   // for vector
+    std::map<int, T> get_column_vals(int idx);    // for vector
 };
 
-// Constructors
+// Constructors and destructors
 //////////////////////////////////
 
 template<class T>
@@ -136,6 +146,22 @@ Matrix<T>::Matrix(Matrix&& other){
     std::swap(values, other.values);
 }
 
+template<class T>
+Matrix<T>::Matrix(const Matrix_proxy<T>& proxy){
+    std::pair<int, int> dims = proxy.get_dim();
+    rows = dims.first;
+    columns = dims.second;
+    eps = proxy.get_eps();
+    values = proxy.get_values_as_hash_map();
+}
+
+template<class T>
+Matrix<T>::~Matrix(){
+    for (auto proxy: proxies) {
+        remove_proxy(proxy);
+    }
+}
+
 //////////////////////////////////
 
 // operators
@@ -143,20 +169,18 @@ Matrix<T>::Matrix(Matrix&& other){
 
 // operator() creates members of unordered_set if key is missing.
 // We need to return reference to any value (even if missing) since we can't 
-// predict if we read or set an element, so we sometimes create fake elements.
+// predict if we read or write an element, so we sometimes create fake elements.
 // They are cleared internally with call of some methods.
 template<class T>
 T& Matrix<T>::operator()(int i, int j){
     if (!(i < rows && j < columns )) throw 5;    // TODO: make special exception
     return values[{i, j}];
-    /*
-    auto res = values.find({i, j});
-    if (res == values.end()) {
-        return T(0);
-    } else {
-        return res->second;
-    }
-    */
+}
+
+//call operator(pos.first, pos.second)
+template<class T>
+T& Matrix<T>::operator()(const coords& pos){
+    return this->operator()(pos.first, pos.second);
 }
 
 template<class T>
@@ -183,7 +207,9 @@ Matrix<T> Matrix<T>::operator+(Matrix& other){
         tmp_vals[elem.first] = values[elem.first] + other.values[elem.first];
     }
     Matrix<T> res(rows, columns, tmp_vals);
-    res._clear_fake_vals();
+
+    _clear_fake_vals();
+    other._clear_fake_vals();
     return res;
 }
 
@@ -195,7 +221,9 @@ Matrix<T> Matrix<T>::operator-(Matrix& other){
         tmp_vals[elem.first] = values[elem.first] - other.values[elem.first];
     }
     Matrix<T> res(rows, columns, tmp_vals);
-    res._clear_fake_vals();
+
+    _clear_fake_vals();
+    other._clear_fake_vals();
     return res;
 }
 
@@ -216,7 +244,9 @@ Matrix<T> Matrix<T>::operator*(Matrix& other){
     }
     
     Matrix<T> res(rows, other.columns, tmp_vals, eps);
-    res._clear_fake_vals();
+
+    _clear_fake_vals();
+    other._clear_fake_vals();
     return res;
 }
 
@@ -250,8 +280,26 @@ Matrix<T> Matrix<T>::operator~(){
 
 template<class T>
 Matrix_proxy<T> Matrix<T>::operator[](const Matrix_coords& coords){
-    Matrix_proxy<T> res(coords, *this);
-    return res;
+    if (coords.has({rows, columns})){
+        throw 3;       // TODO: exceptions out of range
+    }
+    return Matrix_proxy<T>(*this, coords);
+}
+
+template<class T>
+Matrix_proxy<T> Matrix<T>::operator[](const Matrix_row_coord& row) {
+    if (row.get_row_index() < 0 || rows <= row.get_row_index()){
+        throw 3;    //OutOfRangeException();
+    }
+    return Matrix_proxy<T>(*this, row);
+}
+
+template<class T>
+Matrix_proxy<T> Matrix<T>::operator[](const Matrix_column_coord& column) {
+    if (column.get_column_index() < 0 || columns <= column.get_column_index()){
+        throw 3;    // OutOfRangeException();
+    }
+    return Matrix_proxy<T>(*this, column);
 }
 
 //////////////////////////////////
@@ -313,6 +361,44 @@ void Matrix<Rational_number>::_clear_fake_vals(){
     }
 }
 
+template<class T>
+std::unordered_map<coords, T> Matrix<T>::get_submatrix_vals(const Matrix_coords& range){
+    //_clear_fake_vals();
+    std::map<coords, T> res_vals;
+        for (const auto& elem: values) {
+            if (range.has(elem.first)) {
+                res_vals.insert(elem);
+            }
+        }
+    return res_vals;
+}
+
+template<class T>
+std::map<int, T> Matrix<T>::get_row_vals(int idx){
+    //_clear_fake_vals();
+    Matrix_row_coord range(idx);
+    std::map<coords, T> res_vals;
+        for (const auto& elem: values) {
+            if (range.has(elem.first.first)) {      // elem.first.first - X coord
+                res_vals.insert({elem.first.first, elem.second});
+            }
+        }
+    return res_vals;
+}
+
+template<class T>
+std::map<int, T> Matrix<T>::get_column_vals(int idx){
+    //_clear_fake_vals();
+    Matrix_column_coord range(idx);
+    std::unordered_map<coords, T> res_vals;
+        for (const auto& elem: values) {
+            if (range.has(elem.first.second)) {     // elem.first.second - Y coord
+                res_vals.insert({elem.first.second, elem.second});
+            }
+        }
+    return res_vals;
+}
+
 
 template<class T>
 std::string Matrix<T>::to_string(){
@@ -329,7 +415,6 @@ std::string Matrix<T>::to_string(){
 
 template<>
 std::string Matrix<Rational_number>::to_string(){
-    _clear_fake_vals();
     std::string res("matrix rational ");
     res = res + std::to_string(rows) + " " + std::to_string(columns) + "\n";
     for (const auto& elem: values){
@@ -341,7 +426,6 @@ std::string Matrix<Rational_number>::to_string(){
 
 template<>
 std::string Matrix<Complex_number<>>::to_string(){
-    _clear_fake_vals();
     std::string res("matrix complex ");
     res = res + std::to_string(rows) + " " + std::to_string(columns) + "\n";
     for (const auto& elem: values){
@@ -358,7 +442,14 @@ void Matrix<T>::add_proxy(Matrix_proxy<T>* proxy){
 
 template<class T>
 void Matrix<T>::remove_proxy(Matrix_proxy<T>* proxy) {
+    proxy->unlink();
     proxies.erase(proxy);
+}
+
+template<class T>
+void Matrix<T>::set_eps(double new_eps){
+    eps = new_eps;
+    _clear_fake_vals();
 }
 
 //////////////////////////////////

@@ -14,6 +14,9 @@ class Matrix_coords{
 private:
     int left_x, left_y, right_x, right_y; // top left, bottom right coordinates
     bool is_consistent() const;  // if coords are consistent: left <= right (but -1)
+
+    template<class T>
+    friend class Matrix_proxy;
 public:
     Matrix_coords();    // default ({-1, -1}, {-1, -1})
     Matrix_coords(const coords& left);  // call Matrix_coords(left, left)
