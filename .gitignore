@@ -25,3 +25,5 @@ thumbs.db
 *.lib
 *.ppu
 
+test.cpp
+test
