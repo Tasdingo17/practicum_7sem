@@ -29,6 +29,6 @@ Documentation (require doxygen):
 
 `doxygen Doxyfile`
 
-Will create html directory with documentation (open some html file)
+Will create docs/html directory with documentation (open some html file)
 
 Tests are built currently in build directory. You can recognize them with template "ClassName_test" (just run those files if you want)
