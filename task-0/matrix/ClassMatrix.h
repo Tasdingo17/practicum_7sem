@@ -12,6 +12,8 @@
 #include "Matrix_coords.h"
 #include "Matrix_proxy.hpp"
 
+#ifndef __Matr_vals__
+#define __Matr_vals__
 struct pair_hash{
     template <class T1, class T2>
     std::size_t operator() (const std::pair<T1, T2>& pair) const {
@@ -23,6 +25,7 @@ using coords = std::pair<int, int>;
 
 template<class T>
 using matr_vals = std::unordered_map<coords, T, pair_hash>;
+#endif  //__Matr_vals__
 
 /**
  * @brief Class for sparse matrices.
@@ -81,7 +84,7 @@ public:
     std::string to_string();
     void set_eps(double new_eps);
 
-    std::unordered_map<coords, T> get_submatrix_vals(const Matrix_coords& range);    // for matrix
+    matr_vals<T> get_submatrix_vals(const Matrix_coords& range);    // for matrix
     std::map<int, T> get_row_vals(int idx);   // for vector
     std::map<int, T> get_column_vals(int idx);    // for vector
 };
@@ -362,9 +365,9 @@ void Matrix<Rational_number>::_clear_fake_vals(){
 }
 
 template<class T>
-std::unordered_map<coords, T> Matrix<T>::get_submatrix_vals(const Matrix_coords& range){
+matr_vals<T> Matrix<T>::get_submatrix_vals(const Matrix_coords& range){
     //_clear_fake_vals();
-    std::map<coords, T> res_vals;
+    matr_vals<T> res_vals;
         for (const auto& elem: values) {
             if (range.has(elem.first)) {
                 res_vals.insert(elem);
