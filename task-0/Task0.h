@@ -2,3 +2,4 @@
 #include "complex/ClassComplex.h"
 #include "matrix/ClassMatrix.h"
 #include "parsers/Parser.h"
+#include "vector/ClassVector.hpp"

@@ -37,14 +37,17 @@ set(Matrix     matrix/ClassMatrix.h
                matrix/Matrix_proxy.hpp
    )
 
+set(Vector     vector/ClassVector.hpp
+   )
+
 set(Parsers    parsers/Parser.h
                parsers/Parser.cpp
    )
 
-add_library( Task0 ${Rational_number} ${Complex} ${Matrix} ${Exceptions} ${Parsers})
+add_library( Task0 ${Rational_number} ${Complex} ${Matrix} ${Vector} ${Exceptions} ${Parsers})
 
 
-option(USER_TEST "Compile test.cpp file" ON)
+option(USER_TEST "Compile test.cpp file" OFF)
 
 if(USER_TEST)
   add_executable(test_task0 test.cpp)
