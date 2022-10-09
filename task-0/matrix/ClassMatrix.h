@@ -42,7 +42,7 @@ class Matrix{
 private:
     int rows;
     int columns;
-    double eps;
+    constexpr static double eps = 0.01;
     matr_vals<T> values;
 
     friend class Matrix_proxy<T>;
@@ -54,9 +54,8 @@ private:
     bool same_shape(const Matrix& other) const;
     matr_vals<T> key_union(const Matrix& other) const;
 public:
-    Matrix(int _rows, int _columns, double _eps = 0.001, 
-           bool unar = false, bool fill_one = false);
-    Matrix(int _rows, int _columns, const matr_vals<T>&  _values, double _eps = 0.001);
+    Matrix(int _rows, int _columns, bool unar = false, bool fill_one = false);
+    Matrix(int _rows, int _columns, const matr_vals<T>&  _values);
     Matrix(const Matrix& other);
     Matrix(Matrix&& other);
     ~Matrix();
@@ -82,20 +81,22 @@ public:
     Matrix_proxy<T> operator[](const Matrix_column_coord& row);
     int size();   // number of elems in values
     std::string to_string();
-    void set_eps(double new_eps);
+    static void set_eps(double new_eps);
+    static double get_eps();
 
     matr_vals<T> get_submatrix_vals(const Matrix_coords& range);    // for matrix
     std::map<int, T> get_row_vals(int idx);   // for vector
     std::map<int, T> get_column_vals(int idx);    // for vector
+
+    void to_file(const char* filename) const;
 };
 
 // Constructors and destructors
 //////////////////////////////////
 
 template<class T>
-Matrix<T>::Matrix(int _rows, int _columns, double _eps, bool unar, bool fill_one):
-    rows(_rows), columns(_columns), eps(_eps){
-    if (eps >= 1 && (unar || fill_one) ) throw 7;  // TODO: special exception;
+Matrix<T>::Matrix(int _rows, int _columns, bool unar, bool fill_one):
+    rows(_rows), columns(_columns){
     if (unar && fill_one) throw 8;                 // TODO: special exception;
     if (unar)
         for (int i = 0; i < std::min(rows, columns); i++)
@@ -110,8 +111,8 @@ Matrix<T>::Matrix(int _rows, int _columns, double _eps, bool unar, bool fill_one
 
 
 template<class T>
-Matrix<T>::Matrix(int _rows, int _columns, const matr_vals<T>&  _values, double _eps):
-    rows(_rows), columns(_columns), eps(_eps){
+Matrix<T>::Matrix(int _rows, int _columns, const matr_vals<T>&  _values):
+    rows(_rows), columns(_columns){
     for (const auto& elem : _values){
         coords tmp = elem.first;
         if (!(tmp.first < rows && tmp.second < columns)) throw 5;   // TODO: make special exception
@@ -122,8 +123,8 @@ Matrix<T>::Matrix(int _rows, int _columns, const matr_vals<T>&  _values, double 
 }
 
 template<>
-Matrix<Complex_number<>>::Matrix(int _rows, int _columns, const matr_vals<Complex_number<>>&  _values, double _eps):
-    rows(_rows), columns(_columns), eps(_eps){
+Matrix<Complex_number<>>::Matrix(int _rows, int _columns, const matr_vals<Complex_number<>>&  _values):
+    rows(_rows), columns(_columns){
     for (const auto& elem : _values){
         coords tmp = elem.first;
         if (!(tmp.first < rows && tmp.second < columns)) throw 5;   // TODO: make special exception
@@ -137,7 +138,6 @@ template<class T>
 Matrix<T>::Matrix(const Matrix& other){
     rows = other.rows;
     columns = other.columns;
-    eps = other.eps;
     values = other.values;
 }
 
@@ -145,7 +145,6 @@ template<class T>
 Matrix<T>::Matrix(Matrix&& other){
     rows = std::move(other.rows);
     columns = std::move(other.columns);
-    eps = std::move(other.eps);
     std::swap(values, other.values);
 }
 
@@ -154,7 +153,6 @@ Matrix<T>::Matrix(const Matrix_proxy<T>& proxy){
     std::pair<int, int> dims = proxy.get_dim();
     rows = dims.first;
     columns = dims.second;
-    eps = proxy.get_eps();
     values = proxy.get_values_as_hash_map();
 }
 
@@ -419,6 +417,7 @@ std::string Matrix<T>::to_string(){
 
 template<>
 std::string Matrix<Rational_number>::to_string(){
+    _clear_fake_vals();
     std::string res("matrix rational ");
     res = res + std::to_string(rows) + " " + std::to_string(columns) + "\n";
     for (const auto& elem: values){
@@ -430,6 +429,7 @@ std::string Matrix<Rational_number>::to_string(){
 
 template<>
 std::string Matrix<Complex_number<>>::to_string(){
+    _clear_fake_vals();
     std::string res("matrix complex ");
     res = res + std::to_string(rows) + " " + std::to_string(columns) + "\n";
     for (const auto& elem: values){
@@ -454,6 +454,11 @@ template<class T>
 void Matrix<T>::set_eps(double new_eps){
     eps = new_eps;
     _clear_fake_vals();
+}
+
+template<class T>
+double Matrix<T>::get_eps(){
+    return eps;
 }
 
 //////////////////////////////////
