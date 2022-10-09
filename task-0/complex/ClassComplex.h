@@ -244,7 +244,7 @@ public:
      * @param rhs value to divide on
      * @return Complex_number& 
      * 
-     * @throw int TODO
+     * @throw Zero_division if rhs is zero;
      */
     Complex_number& operator/=(const Complex_number& rhs);
 
@@ -455,7 +455,7 @@ Complex_number<R, T>& Complex_number<R, T>::operator=(const Complex_number<U, V>
         real = static_cast<R>(other.get_real());
         imag = static_cast<T>(other.get_imag());
     } catch (...){
-        throw Bad_construct("Error during copy constructor");  // TODO: make special exception
+        throw Bad_construct("Error during copy constructor");
     }
     return *this;
 }
