@@ -12,6 +12,8 @@
 #include "Matrix_coords.h"
 #include "Matrix_proxy.hpp"
 
+#include "../parsers/Parser.h"
+
 #ifndef __Matr_vals__
 #define __Matr_vals__
 struct pair_hash{
@@ -163,6 +165,54 @@ Matrix<T>::~Matrix(){
     }
 }
 
+template<class T>
+Matrix<T>::Matrix(const char* file_path){
+    throw 123;  // todo: not generally specialized
+}
+
+template<>
+Matrix<Rational_number>::Matrix(const char* file_path){
+    Parser parser;
+    parser.parse_matrix(file_path);
+    if (parser.get_type() != "rational"){
+        throw 9;    // todo: type mismatch exceptions
+    }
+    rows = parser.get_rows_number();
+    columns = parser.get_columns_number();
+
+    for (const auto& elem : parser.get_vals()){
+        coords pos = elem.first;
+        pos.first -= 1;     // in file numeration from 1
+        pos.second -= 1;    // in file numeration from 1
+        if (!(pos.first < rows && pos.second < columns)) throw 5;   // TODO: make special exception
+        Rational_number val(elem.second.first, elem.second.second);
+        if (!(abs(val) < eps)){
+            values[pos] = val;
+        }
+    }
+}
+
+template<>
+Matrix<Complex_number<>>::Matrix(const char* file_path){
+    Parser parser;
+    parser.parse_matrix(file_path);
+    if (parser.get_type() != "complex"){
+        throw 9;    // todo: type mismatch exceptions
+    }
+    rows = parser.get_rows_number();
+    columns = parser.get_columns_number();
+
+    for (const auto& elem : parser.get_vals()){
+        coords pos = elem.first;
+        pos.first -= 1;     // in file numeration from 1
+        pos.second -= 1;    // in file numeration from 1
+        if (!(pos.first < rows && pos.second < columns)) throw 5;   // TODO: make special exception
+        Complex_number<> val(std::stod(elem.second.first), std::stod(elem.second.second));
+        if (!(val.module_square() < eps * eps)){
+            values[pos] = val;
+        }
+    }
+}
 //////////////////////////////////
 
 // operators
