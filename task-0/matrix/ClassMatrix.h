@@ -62,7 +62,7 @@ public:
     Matrix(Matrix&& other);
     ~Matrix();
 
-    // Constructor from filename (todo: parser)
+    // Constructor from filename
     explicit Matrix(const char* file_path);
 
     // Constructor from proxy
@@ -81,16 +81,21 @@ public:
     Matrix_proxy<T> operator[](const Matrix_coords& coords);
     Matrix_proxy<T> operator[](const Matrix_row_coord& row);
     Matrix_proxy<T> operator[](const Matrix_column_coord& row);
-    int size();   // number of elems in values
+    
+    // number of non-zero elems in values
+    int size();   
     std::string to_string();
     static void set_eps(double new_eps);
     static double get_eps();
+
+    int get_rows_number() const;
+    int get_columns_number() const;
 
     matr_vals<T> get_submatrix_vals(const Matrix_coords& range);    // for matrix
     std::map<int, T> get_row_vals(int idx);   // for vector
     std::map<int, T> get_column_vals(int idx);    // for vector
 
-    void to_file(const char* filename) const;
+    void to_file(const char* filename);       // TODO!
 };
 
 // Constructors and destructors
@@ -382,14 +387,13 @@ int Matrix<T>::size(){
     return values.size();
 }
 
-// operator() creates members of unordered_set if key is missing.
+// operator() creates members of unordered_map if key is missing.
 // We need to return reference to any value (even if missing) since we can't 
 // predict if we read or set an element, so we sometimes create fake elements.
 // This function removes them.
 template<class T>
 void Matrix<T>::_clear_fake_vals(){
     for(const auto& elem: values){
-        //std::cout << "here: " << elem.second << " " << eps << " " << (abd(elem.second) < eps) <<std::endl;
         if (abs(elem.second) < eps)
             values.erase(elem.first);
     }
@@ -503,12 +507,21 @@ void Matrix<T>::remove_proxy(Matrix_proxy<T>* proxy) {
 template<class T>
 void Matrix<T>::set_eps(double new_eps){
     eps = new_eps;
-    _clear_fake_vals();
 }
 
 template<class T>
 double Matrix<T>::get_eps(){
     return eps;
+}
+
+template<class T>
+int Matrix<T>::get_rows_number() const{
+    return rows;
+}
+
+template<class T>
+int Matrix<T>::get_columns_number() const{
+    return columns;
 }
 
 //////////////////////////////////
