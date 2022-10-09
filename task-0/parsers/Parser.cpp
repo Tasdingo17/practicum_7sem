@@ -193,17 +193,42 @@ void Parser::parse_matrix(const char* filename){
     if (!file_data.is_open()){
         throw 10;   // todo:exceptions (!note: not only non-exsisting also permission failures)
     }
+    
     _parse_matrix_config(file_data);
-    std::cout << "type: " << type << " rows: " << rows << " columns: " << columns << std::endl;     // test
     _set_delimeters();
     _parse_matrix_values(file_data);
 
-    //test
+    file_data.close();
+}
+
+int Parser::get_rows_number() const{
+    return rows;
+}
+
+int Parser::get_columns_number() const{
+    return columns;
+}
+
+std::pair<int, int> Parser::get_dims() const{
+    return {rows, columns};
+}
+
+std::string Parser::get_type() const {
+    return type;
+}
+
+std::unordered_map<coords, pair_str_vals, pair_hash > Parser::get_vals() const{
+    return matrix_vals;
+}
+
+void Parser::print_matrix_config() const{
+    std::cout << "type: " << type << " rows: " << rows << " columns: " << columns << std::endl;     // test
+}
+
+void Parser::print_matrix_values() const{
     for(const auto& elem: matrix_vals){
         std::cout << '(' << elem.first.first << ',' << elem.first.second << "): ";
         std::cout << delim_start << elem.second.first << delim_middle << elem.second.second << delim_end;
         std::cout << std::endl;
     }
-    
-    file_data.close();
 }

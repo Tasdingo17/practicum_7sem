@@ -30,6 +30,15 @@ class Parser{
 public:
     void parse_matrix(const char* filename);
     void parse_vector(const char* filename);
+
+    int get_rows_number() const;
+    int get_columns_number() const;
+    std::pair<int, int> get_dims() const;
+    std::string get_type() const;
+    std::unordered_map<coords, pair_str_vals, pair_hash > get_vals() const;
+
+    void print_matrix_config() const;
+    void print_matrix_values() const;
 private:
     // set delim1, delim2, delim3 based on type
     void _set_delimeters();
