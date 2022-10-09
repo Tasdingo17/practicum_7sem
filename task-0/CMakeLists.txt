@@ -37,7 +37,11 @@ set(Matrix     matrix/ClassMatrix.h
                matrix/Matrix_proxy.hpp
    )
 
-add_library( Task0 ${Rational_number} ${Complex} ${Matrix} ${Exceptions} )
+set(Parsers    parsers/Parser.h
+               parsers/Parser.cpp
+   )
+
+add_library( Task0 ${Rational_number} ${Complex} ${Matrix} ${Exceptions} ${Parsers})
 
 
 option(USER_TEST "Compile test.cpp file" ON)
