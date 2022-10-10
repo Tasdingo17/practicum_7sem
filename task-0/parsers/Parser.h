@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <fstream>
 
 #ifndef __Matr_vals__
 #define __Matr_vals__
@@ -35,17 +36,26 @@ public:
     int get_columns_number() const;
     std::pair<int, int> get_dims() const;
     std::string get_type() const;
-    std::unordered_map<coords, pair_str_vals, pair_hash > get_vals() const;
+    std::unordered_map<coords, pair_str_vals, pair_hash > get_matrix_vals() const;
+    int get_max_size() const;
+    std::map<int, pair_str_vals> get_vector_vals() const;
 
     void print_matrix_config() const;
     void print_matrix_values() const;
+    void print_vector_config() const;
+    void print_vector_values() const;
 private:
     // set delim1, delim2, delim3 based on type
     void _set_delimeters();
+    std::ifstream _open_file_safe(const char* filename) const;
     void _parse_matrix_config(std::ifstream& file_data);
+    void _parse_vector_config(std::ifstream& file_data);
     void _parse_matrix_values(std::ifstream& file_data);
+    void _parse_vector_values(std::ifstream& file_data);
     void _parse_and_set_matr_value(const std::string& line);
-    coords _parse_coords(std::stringstream& line);
+    void _parse_and_set_vect_value(const std::string& line);
+    coords _parse_matrix_coords(std::stringstream& line);
+    int _parse_vector_coords(std::stringstream& line);
     pair_str_vals _parse_val(std::stringstream& line);
 
     pair_str_vals __parse_complex(std::stringstream& line);
@@ -53,6 +63,7 @@ private:
     pair_str_vals __parse_single_val(std::stringstream& line);
 
     int rows, columns;
+    int max_size;
     std::string type;
 
     // delimerets for values: "delim_start value1 delim_middle value2 delim_end"
@@ -60,6 +71,7 @@ private:
     char delim_start, delim_middle, delim_end;
 
     std::unordered_map<coords, pair_str_vals, pair_hash > matrix_vals;
+    std::map<int, pair_str_vals> vector_vals;
 };
 
 #endif  //__Parser_h__

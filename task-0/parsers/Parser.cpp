@@ -75,6 +75,27 @@ void Parser::_parse_matrix_config(std::ifstream& file_data){
     }
 }
 
+// assume file_data is already succesfully attached to file
+void Parser::_parse_vector_config(std::ifstream& file_data){
+    std::string tmp_line, tmp_word;
+    while (std::getline(file_data, tmp_line)){
+        if (empty_line(tmp_line) || comment_line(tmp_line)) continue;
+
+        std::stringstream line(tmp_line);
+        line >> tmp_word;
+        if (tmp_word != "vector") throw 12;     //todo: wrong format exception
+        
+        line >> type;
+        if (!is_possible_type(type)){
+            throw 13;                      // todo: exception
+        }
+
+        line >> tmp_word;
+        max_size = string_to_number(tmp_word);
+        if (max_size <= 0) throw 14;    // todo: wrong dims exceptions
+        break;
+    }
+}
 
 void Parser::_set_delimeters(){
     if (type == "rational"){
@@ -98,7 +119,7 @@ void Parser::_set_delimeters(){
 }
 
 
-coords Parser::_parse_coords(std::stringstream& line){
+coords Parser::_parse_matrix_coords(std::stringstream& line){
     std::string tmp_word;
     int x_coord, y_coord;
     line >> tmp_word;
@@ -107,6 +128,15 @@ coords Parser::_parse_coords(std::stringstream& line){
     y_coord = string_to_number(tmp_word);
     if (x_coord <= 0 || y_coord <= 0) throw 6;  // TODO: wrong coordinate exceptions
     return {x_coord, y_coord};
+}
+
+int Parser::_parse_vector_coords(std::stringstream& line){
+    std::string tmp_word;
+    int pos;
+    line >> tmp_word;
+    pos = string_to_number(tmp_word);
+    if (pos <= 0) throw 6;  // TODO: wrong coordinate exceptions
+    return pos;
 }
 
 
@@ -170,9 +200,17 @@ pair_str_vals Parser::_parse_val(std::stringstream& line){
 void Parser::_parse_and_set_matr_value(const std::string& tmp_line){
     std::stringstream line(tmp_line);
 
-    coords pos = _parse_coords(line);
+    coords pos = _parse_matrix_coords(line);
     pair_str_vals val = _parse_val(line); 
     matrix_vals[pos] = val;
+}
+
+void Parser::_parse_and_set_vect_value(const std::string& tmp_line){
+    std::stringstream line(tmp_line);
+
+    int pos = _parse_vector_coords(line);
+    pair_str_vals val = _parse_val(line); 
+    vector_vals[pos] = val;
 }
 
 
@@ -185,18 +223,46 @@ void Parser::_parse_matrix_values(std::ifstream& file_data){
     }
 }
 
+// assume file_data is already succesfully attached to file
+void Parser::_parse_vector_values(std::ifstream& file_data){
+    std::string tmp_line;
+    while (std::getline(file_data, tmp_line)){
+        if (empty_line(tmp_line) || comment_line(tmp_line)) continue;
+        _parse_and_set_vect_value(tmp_line);
+    }
+}
 
-void Parser::parse_matrix(const char* filename){
-    matrix_vals.clear();
+std::ifstream Parser::_open_file_safe(const char* filename) const{
     std::ifstream file_data;
     file_data.open(filename);
     if (!file_data.is_open()){
         throw 10;   // todo:exceptions (!note: not only non-exsisting also permission failures)
     }
+    return file_data;
+}
+
+void Parser::parse_matrix(const char* filename){
+    vector_vals.clear();
+    matrix_vals.clear();
+    
+    std::ifstream file_data = _open_file_safe(filename);
     
     _parse_matrix_config(file_data);
     _set_delimeters();
     _parse_matrix_values(file_data);
+
+    file_data.close();
+}
+
+void Parser::parse_vector(const char* filename){
+    vector_vals.clear();
+    matrix_vals.clear();
+    
+    std::ifstream file_data = _open_file_safe(filename);
+
+    _parse_vector_config(file_data);
+    _set_delimeters();
+    _parse_vector_values(file_data);
 
     file_data.close();
 }
@@ -217,8 +283,16 @@ std::string Parser::get_type() const {
     return type;
 }
 
-std::unordered_map<coords, pair_str_vals, pair_hash > Parser::get_vals() const{
+std::unordered_map<coords, pair_str_vals, pair_hash > Parser::get_matrix_vals() const{
     return matrix_vals;
+}
+
+int Parser::get_max_size() const{
+    return max_size;
+}
+
+std::map<int, pair_str_vals> Parser::get_vector_vals() const{
+    return vector_vals;
 }
 
 void Parser::print_matrix_config() const{
@@ -228,6 +302,18 @@ void Parser::print_matrix_config() const{
 void Parser::print_matrix_values() const{
     for(const auto& elem: matrix_vals){
         std::cout << '(' << elem.first.first << ',' << elem.first.second << "): ";
+        std::cout << delim_start << elem.second.first << delim_middle << elem.second.second << delim_end;
+        std::cout << std::endl;
+    }
+}
+
+void Parser::print_vector_config() const{
+    std::cout << "type: " << type << " max_size: " << max_size << std::endl;
+}
+
+void Parser::print_vector_values() const{
+    for(const auto& elem: vector_vals){
+        std::cout << elem.first << ": ";
         std::cout << delim_start << elem.second.first << delim_middle << elem.second.second << delim_end;
         std::cout << std::endl;
     }

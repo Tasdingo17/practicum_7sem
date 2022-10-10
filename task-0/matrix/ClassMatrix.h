@@ -187,7 +187,7 @@ Matrix<Rational_number>::Matrix(const char* file_path){
     rows = parser.get_rows_number();
     columns = parser.get_columns_number();
 
-    for (const auto& elem : parser.get_vals()){
+    for (const auto& elem : parser.get_matrix_vals()){
         coords pos = elem.first;
         pos.first -= 1;     // in file numeration from 1
         pos.second -= 1;    // in file numeration from 1
@@ -209,7 +209,7 @@ Matrix<Complex_number<>>::Matrix(const char* file_path){
     rows = parser.get_rows_number();
     columns = parser.get_columns_number();
 
-    for (const auto& elem : parser.get_vals()){
+    for (const auto& elem : parser.get_matrix_vals()){
         coords pos = elem.first;
         pos.first -= 1;     // in file numeration from 1
         pos.second -= 1;    // in file numeration from 1
