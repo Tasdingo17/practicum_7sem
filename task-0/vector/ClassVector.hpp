@@ -21,6 +21,7 @@ private:
     void _clear_fake_vals();    // operator() creates members of unordered_set if key is missing
     bool same_shape(const Vector& other) const;
     vect_vals<T> key_union(const Vector& other) const;
+    std::ofstream _open_write_file(const char* filename, bool append = false) const;
 public:
     Vector(int _max_size, bool fill_one = false);
     Vector(int _max_size, const vect_vals<T>&  _values);
@@ -63,7 +64,7 @@ public:
     //non-zero elements
     int get_size();
 
-    void to_file(const char* filename);       // TODO!
+    void to_file(const char* filename, bool append = false);       // TODO!
 };
 
 // Constructors and destructors
@@ -345,6 +346,69 @@ vect_vals<T> Vector<T>::key_union(const Vector& other) const{
     }
     return tmp_vals;
 }
+
+template<class T>
+std::ofstream Vector<T>::_open_write_file(const char* filename, bool append) const{
+    std::ofstream file_data;
+    if (append){
+        file_data.open(filename, std::ios_base::app);
+    } else {
+        file_data.open(filename);
+    }
+    if (!file_data.is_open()){
+        throw 10;   // todo:exceptions (!note: not only non-exsisting also permission failures)
+    }
+    return file_data;
+}
+
+template<class T>
+void Vector<T>::to_file(const char* filename, bool append){
+    _clear_fake_vals();
+    auto file_data = _open_write_file(filename, append);
+
+    std::string res("vector ");
+    res = res + typeid(T).name() + " " + std::to_string(max_size) + "\n";
+    for (const auto& elem: values){
+        res = res + "\n" + std::to_string(elem.first + 1) + "  " + std::to_string(elem.second);
+    }
+
+    file_data << res;
+    if (file_data.fail()) throw 12; //todo: exceptions
+    file_data.close();
+}
+
+template<>
+void Vector<Rational_number>::to_file(const char* filename, bool append){
+    _clear_fake_vals();
+    auto file_data = _open_write_file(filename, append);
+
+    std::string res("vector rational ");
+    res = res + std::to_string(max_size) + "\n";
+    for (const auto& elem: values){
+        res = res + "\n" + std::to_string(elem.first + 1) + "  " + elem.second.to_string();
+    }
+
+    file_data << res;
+    if (file_data.fail()) throw 12; //todo: exceptions
+    file_data.close();
+}
+
+template<>
+void Vector<Complex_number<>>::to_file(const char* filename, bool append){
+    _clear_fake_vals();
+    auto file_data = _open_write_file(filename, append);
+
+    std::string res("vector complex ");
+    res = res + std::to_string(max_size) + "\n";
+    for (const auto& elem: values){
+        res = res + "\n" + std::to_string(elem.first + 1) + "  " + elem.second.to_string();
+    }
+
+    file_data << res;
+    if (file_data.fail()) throw 12; //todo: exceptions
+    file_data.close();
+}
+
 
 //////////////////////////////////
 
