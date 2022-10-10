@@ -115,6 +115,51 @@ Vector<T>::Vector(Vector&& other){
     values = std::move(other.values);
 }
 
+template<class T>
+Vector<T>::Vector(const char* file_path){
+    throw 123;  // todo: not generally specialized
+}
+
+template<>
+Vector<Rational_number>::Vector(const char* file_path){
+    Parser parser;
+    parser.parse_vector(file_path);
+    if (parser.get_type() != "rational"){
+        throw 9;    // todo: type mismatch exceptions
+    }
+    max_size = parser.get_max_size();
+
+    for (const auto& elem : parser.get_vector_vals()){
+        int pos = elem.first;
+        pos -= 1;     // in file numeration from 1
+        if (!(pos < max_size)) throw 5;   // TODO: make special exception
+        Rational_number val(elem.second.first, elem.second.second);
+        if (!(abs(val) < eps)){
+            values[pos] = val;
+        }
+    }
+}
+
+template<>
+Vector<Complex_number<>>::Vector(const char* file_path){
+    Parser parser;
+    parser.parse_vector(file_path);
+    if (parser.get_type() != "complex"){
+        throw 9;    // todo: type mismatch exceptions
+    }
+    max_size = parser.get_max_size();
+
+    for (const auto& elem : parser.get_vector_vals()){
+        int pos = elem.first;
+        pos -= 1;   // in file numeration from 1
+        if (!(pos < max_size)) throw 5;   // TODO: make special exception
+        Complex_number<> val(std::stod(elem.second.first), std::stod(elem.second.second));
+        if (!(val.module_square() < eps * eps)){
+            values[pos] = val;
+        }
+    }
+}
+
 //////////////////////////////////
 
 // operators
