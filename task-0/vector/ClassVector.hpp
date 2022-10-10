@@ -2,7 +2,12 @@
 #define __ClassVector_H__
 
 #include<map>
+#include<set>
 #include<string>
+
+#include"../rational/ClassRationalNumber.h"
+#include"../complex/ClassComplex.h"
+#include"../matrix/ClassMatrix.h"
 
 template<class T>
 using vect_vals = std::map<int, T>;
@@ -14,14 +19,40 @@ private:
     constexpr static double eps = 0.01;
     vect_vals<T> values;
     void _clear_fake_vals();    // operator() creates members of unordered_set if key is missing
+    bool same_shape(const Vector& other) const;
+    vect_vals<T> key_union(const Vector& other) const;
 public:
     Vector(int _max_size, bool fill_one = false);
     Vector(int _max_size, const vect_vals<T>&  _values);
     Vector(const Vector& other);
     Vector(Vector&& other);
 
+    explicit Vector(const Matrix_proxy<T>& proxy);
+
     // Constructor from filename (todo: parser)
     explicit Vector(const char* file_path);
+
+    T& operator()(int i);
+    Vector& operator=(const Vector& other);
+    Vector& operator=(Vector&& other);
+    Vector operator+(Vector& other); // return type of left operand
+    Vector operator-(Vector& other); // return type of left operand
+    Vector operator-();   //unar -
+
+    bool operator==(const Vector& other);       // todo?
+    bool operator!=(const Vector& other);       // todo?
+
+    template<typename TValueLeft, typename TValueRight>
+    friend Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, const TValueRight& rhs);
+
+    template<typename TValueLeft, typename TValueRight>
+    friend Vector<TValueLeft> operator-(Vector<TValueLeft> lhs, const TValueRight& rhs);
+
+    template<typename TValueLeft, typename TValueRight>
+    friend Vector<TValueLeft> operator*(Vector<TValueLeft> lhs, const TValueRight& rhs);
+
+    template<typename TValueLeft, typename TValueRight>
+    friend Vector<TValueLeft> operator/(Vector<TValueLeft> lhs, const TValueRight& rhs);
 
     std::string to_string();
     static void set_eps(double new_eps);
@@ -42,7 +73,6 @@ template<class T>
 Vector<T>::Vector(int _max_size, bool fill_one):
     max_size(_max_size){
     if (fill_one){
-        values.reserve( max_size );
         for (int i = 0; i < max_size; i++)
             values[i] = std::move(T(1));
     }
@@ -89,6 +119,114 @@ Vector<T>::Vector(Vector&& other){
 // operators
 //////////////////////////////////
 
+// operator() creates members of map if key is missing.
+// We need to return reference to any value (even if missing) since we can't 
+// predict if we read or write an element, so we sometimes create fake elements.
+// They are cleared internally with call of some methods.
+template<class T>
+T& Vector<T>::operator()(int i){
+    if (!(0<= i < max_size)) throw 5;    // TODO: make special exception
+    return values[i];
+}
+
+template<class T>
+Vector<T>& Vector<T>::operator=(const Vector& other){
+    if (!same_shape(other)) throw 6;    // TODO: special exception
+    values = other.values;
+    return *this;
+}
+
+template<class T>
+Vector<T>& Vector<T>::operator=(Vector&& other){
+    if (!same_shape(other)) throw 6;    // TODO: special exception
+    values = std::move(other.values);
+    return *this;
+}
+
+// return type of left operand
+template<class T>
+Vector<T> Vector<T>::operator+(Vector& other){
+    if (!same_shape(other)) throw 6;   // TODO: special exception
+    decltype(values) tmp_vals = key_union(other);
+    for (const auto& elem : tmp_vals){
+        tmp_vals[elem.first] = values[elem.first] + other.values[elem.first];
+    }
+    Vector<T> res(max_size, tmp_vals);
+
+    _clear_fake_vals();
+    other._clear_fake_vals();
+    return res;
+}
+
+// return type of left operand
+template<class T>
+Vector<T> Vector<T>::operator-(Vector& other){
+    if (!same_shape(other)) throw 6;   // TODO: special exception
+    decltype(values) tmp_vals = key_union(other);
+    for (const auto& elem : tmp_vals){
+        tmp_vals[elem.first] = values[elem.first] - other.values[elem.first];
+    }
+    Vector<T> res(max_size, tmp_vals);
+
+    _clear_fake_vals();
+    other._clear_fake_vals();
+    return res;
+}
+
+// unar -
+template<class T>
+Vector<T> Vector<T>::operator-(){
+    Vector<T> copy(*this);
+    for(auto& elem : copy.values){
+        elem.second = -elem.second;
+    }
+    return copy;
+}
+
+template<typename TValueLeft, typename TValueRight>
+Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, const TValueRight& rhs){
+    Vector<TValueLeft> res(lhs);
+    for (int i = 0; i < res.max_size; i ++) {
+        res.values[i] += rhs;
+    }
+
+    res._clear_fake_vals();
+    return res;
+}
+
+template<typename TValueLeft, typename TValueRight>
+Vector<TValueLeft> operator-(Vector<TValueLeft> lhs, const TValueRight& rhs){
+    Vector<TValueLeft> res(lhs);
+    for (int i = 0; i < res.max_size; i ++) {
+        res.values[i] -= rhs;
+    }
+    res._clear_fake_vals();
+    return res;
+}
+
+template<typename TValueLeft, typename TValueRight>
+Vector<TValueLeft> operator*(Vector<TValueLeft> lhs, const TValueRight& rhs){
+    if (rhs == TValueRight((int) 0)){
+        return Vector<TValueLeft>(lhs);
+    }
+    Vector<TValueLeft> res(lhs);
+    for (auto& elem : res.values) {
+        elem.second *= rhs;
+    }
+
+    res._clear_fake_vals();
+    return res;
+}
+
+template<typename TValueLeft, typename TValueRight>
+Vector<TValueLeft> operator/(Vector<TValueLeft> lhs, const TValueRight& rhs){
+    if (rhs == TValueRight((int) 0)) throw 6; // todo: ZeroDivision
+    Vector<TValueLeft> res(lhs);
+    for (auto& elem : res.values) {
+        elem.second /= rhs;
+    }
+    return lhs;
+}
 
 //////////////////////////////////
 
@@ -101,27 +239,41 @@ Vector<T>::Vector(Vector&& other){
 // This function removes them.
 template<class T>
 void Vector<T>::_clear_fake_vals(){
-    for(const auto& elem: values){
-        if (abs(elem.second) < eps)
-            values.erase(elem.first);
+    std::set<int> to_delete;
+    for(auto it = values.begin(); it != values.end(); it++){
+        if (abs(it->second) < eps)
+            to_delete.insert(it->first);
+    }
+
+    for (auto& key : to_delete) {
+        values.erase(key);
     }
 }
 
 template<>
 void Vector<Complex_number<>>::_clear_fake_vals(){
-    for(const auto& elem: values){
-        if (elem.second.module_square() < eps * eps)
-            values.erase(elem.first);
+    std::set<int> to_delete;
+    for(auto it = values.begin(); it != values.end(); it++){
+        if (it->second.module_square() < eps * eps)
+            to_delete.insert(it->first);
+    }
+
+    for (auto& key : to_delete) {
+        values.erase(key);
     }
 }
-
 
 template<>
 void Vector<Rational_number>::_clear_fake_vals(){
     Rational_number rat_eps = Rational_number::from_double(eps);
-    for(const auto& elem: values){
-        if (abs(elem.second) < rat_eps)
-            values.erase(elem.first);
+    std::set<int> to_delete;
+    for(auto it = values.begin(); it != values.end(); it++){
+        if (abs(it->second) < rat_eps){
+            to_delete.insert(it->first);
+        }
+    }
+    for (auto& key : to_delete) {
+        values.erase(key);
     }
 }
 
@@ -179,6 +331,20 @@ void Vector<T>::set_eps(double new_eps){
     eps = new_eps;
 }
 
+template<class T>
+bool Vector<T>::same_shape(const Vector& other) const{
+    return max_size == other.max_size;
+}
+
+// union of keys, values are "random"
+template<class T>
+vect_vals<T> Vector<T>::key_union(const Vector& other) const{
+    vect_vals<T> tmp_vals = values;
+    for (const auto& elem: other.values){
+        tmp_vals[elem.first] = elem.second;
+    }
+    return tmp_vals;
+}
 
 //////////////////////////////////
 
