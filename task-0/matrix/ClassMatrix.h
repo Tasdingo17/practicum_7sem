@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <map>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <cmath>
@@ -55,6 +56,7 @@ private:
     void _clear_fake_vals();    // operator() creates members of unordered_set if key is missing
     bool same_shape(const Matrix& other) const;
     matr_vals<T> key_union(const Matrix& other) const;
+    std::ofstream _open_write_file(const char* filename, bool append = false) const;
 public:
     Matrix(int _rows, int _columns, bool unar = false, bool fill_one = false);
     Matrix(int _rows, int _columns, const matr_vals<T>&  _values);
@@ -95,7 +97,7 @@ public:
     std::map<int, T> get_row_vals(int idx);   // for vector
     std::map<int, T> get_column_vals(int idx);    // for vector
 
-    void to_file(const char* filename);       // TODO!
+    void to_file(const char* filename, bool append = false);       // TODO!
 };
 
 // Constructors and destructors
@@ -229,7 +231,7 @@ Matrix<Complex_number<>>::Matrix(const char* file_path){
 // They are cleared internally with call of some methods.
 template<class T>
 T& Matrix<T>::operator()(int i, int j){
-    if (!(i < rows && j < columns )) throw 5;    // TODO: make special exception
+    if (!(0 <= i < rows && 0 <= j < columns )) throw 5;    // TODO: make special exception
     return values[{i, j}];
 }
 
@@ -242,7 +244,6 @@ T& Matrix<T>::operator()(const coords& pos){
 template<class T>
 Matrix<T>& Matrix<T>::operator=(const Matrix& other){
     if (!same_shape(other)) throw 6;    // TODO: special exception
-    eps = other.eps;
     values = other.values;
     return *this;
 }
@@ -250,7 +251,6 @@ Matrix<T>& Matrix<T>::operator=(const Matrix& other){
 template<class T>
 Matrix<T>& Matrix<T>::operator=(Matrix&& other){
     if (!same_shape(other)) throw 6;    // TODO: special exception
-    eps = std::move(other.eps);
     values = std::move(other.values);
     return *this;
 }
@@ -491,6 +491,72 @@ std::string Matrix<Complex_number<>>::to_string(){
               std::to_string(elem.first.second) + "   " + elem.second.to_string();
     }
     return res;
+}
+
+template<class T>
+std::ofstream Matrix<T>::_open_write_file(const char* filename, bool append) const{
+    std::ofstream file_data;
+    if (append){
+        file_data.open(filename, std::ios_base::app);
+    } else {
+        file_data.open(filename);
+    }
+    if (!file_data.is_open()){
+        throw 10;   // todo:exceptions (!note: not only non-exsisting also permission failures)
+    }
+    return file_data;
+}
+
+template<class T>
+void Matrix<T>::to_file(const char* filename, bool append){
+    _clear_fake_vals();
+    auto file_data = _open_write_file(filename, append);
+
+    std::string res("matrix ");
+    res = res + typeid(T).name() + " " + std::to_string(rows) + 
+          " " + std::to_string(columns) + "\n";
+    for (const auto& elem: values){
+        res = res + "\n" + std::to_string(elem.first.first + 1) + " " + 
+              std::to_string(elem.first.second + 1) + "   " + std::to_string(elem.second);
+    }
+
+    file_data << res;
+    if (file_data.fail()) throw 12; //todo: exceptions
+    file_data.close();
+}
+
+template<>
+void Matrix<Rational_number>::to_file(const char* filename, bool append){
+    _clear_fake_vals();
+    auto file_data = _open_write_file(filename, append);
+
+    std::string res("matrix rational ");
+    res = res + std::to_string(rows) + " " + std::to_string(columns) + "\n";
+    for (const auto& elem: values){
+        res = res + "\n" + std::to_string(elem.first.first + 1) + " " +
+              std::to_string(elem.first.second + 1) + "   " + elem.second.to_string();
+    }
+
+    file_data << res;
+    if (file_data.fail()) throw 12; //todo: exceptions
+    file_data.close();
+}
+
+template<>
+void Matrix<Complex_number<>>::to_file(const char* filename, bool append){
+    _clear_fake_vals();
+    auto file_data = _open_write_file(filename, append);
+
+    std::string res("matrix complex ");
+    res = res + std::to_string(rows) + " " + std::to_string(columns) + "\n";
+    for (const auto& elem: values){
+        res = res + "\n" + std::to_string(elem.first.first + 1) + " " +
+              std::to_string(elem.first.second + 1) + "   " + elem.second.to_string();
+    }
+
+    file_data << res;
+    if (file_data.fail()) throw 12; //todo: exceptions
+    file_data.close();
 }
 
 template<class T>
