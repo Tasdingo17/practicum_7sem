@@ -53,6 +53,28 @@ TEST(MatrixTest, ConstrTest){
 }
 
 TEST(MatrixTest, OperatorsTest){
+    Matrix<int> matr1(10, 15, {{{1, 2}, 2}, {{3, 10}, 5}});
+    Matrix<int> matr2(10, 15, {{{1, 2}, 7}, {{5, 3}, -3}});
+    
+    Matrix<int> matr3(matr1 + matr2);
+    EXPECT_EQ(matr3.get_size(), 3);
+
+    Matrix<int> matr4(~matr1);
+    EXPECT_EQ(matr4(1, 2), 0);
+    EXPECT_EQ(matr4(2, 1), 2);
+
+    Matrix<int> matr5(-matr1);
+    EXPECT_EQ(matr5.get_size(), matr1.get_size());
+
+    Matrix<int> matr6(2, 2, {{{1, 1}, 3}, {{0, 0}, 2}});
+    Matrix<int> matr7(2, 2, false, true);
+    Matrix<int> matr8(std::move(matr6 * matr7));
+    EXPECT_EQ(matr8(0, 0), 2);
+    EXPECT_EQ(matr8(0, 1), 2);
+    EXPECT_EQ(matr8(1, 0), 3);
+    EXPECT_EQ(matr8(1, 1), 3);
+
+    EXPECT_THROW((matr6 * matr1), Shape_error);
 }
 
 //TEST(MatrixTest, SliceTest){

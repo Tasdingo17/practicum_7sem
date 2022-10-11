@@ -330,7 +330,7 @@ Matrix<T> Matrix<T>::operator*(Matrix& other){
         }
     }
     
-    Matrix<T> res(rows, other.columns, tmp_vals, eps);
+    Matrix<T> res(rows, other.columns, tmp_vals);
 
     _clear_fake_vals();
     other._clear_fake_vals();
