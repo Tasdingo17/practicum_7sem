@@ -7,6 +7,7 @@
 #define __ClassComplex_H__
 
 #include <ostream>
+#include "../rational/ClassRationalNumber.h"
 
 template <class R = double, class T = R>
 class Complex_number;
@@ -316,8 +317,8 @@ public:
 template <class R, class T>
 Complex_number<R, T>::Complex_number(){
     try{
-        real = R(0);
-        imag = T(0);
+        real = R((long) 0);
+        imag = T((long) 0);
     } catch(...){
         throw Bad_construct("Bad_construct: error during processing real(0) or imag(0), check types");
     }
@@ -374,6 +375,12 @@ std::string Complex_number<R, T>::to_string() const{
     return res;
 }
 
+template<>
+inline std::string Complex_number<Rational_number, Rational_number>::to_string() const{
+    std::string res("(");
+    res = res + real.to_string() + ", " + imag.to_string() + ")";
+    return res;
+}
 ///////////////////////////////////////////////////////////////////////
 
 // Comparing operations

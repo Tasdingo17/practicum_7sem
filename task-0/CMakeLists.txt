@@ -68,14 +68,14 @@ add_executable(Rational_number_test tests/rational/RatNumbersConstrTests.cpp tes
 target_link_libraries(Rational_number_test Task0 GTest::gtest GTest::gtest_main)
 add_test(NAME Rational_number_test COMMAND Rational_number_test)
 
-#add_executable(Complex_number_test tests/complex/Complex_number_constructor_test.cpp test/Complex_number/Complex_number_operators_test.cpp)
-#target_link_libraries(Complex_number_test Task0 gtests_main)
-#add_test(NAME Complex_number_test COMMAND Complex_number_test)
+add_executable(Complex_number_test tests/complex/ComplNumbersConstrTests.cpp tests/complex/ComplNumbersOperatorsTest.cpp)
+target_link_libraries(Complex_number_test Task0 GTest::gtest GTest::gtest_main)
+add_test(NAME Complex_number_test COMMAND Complex_number_test)
 
-#add_executable(Matrix_test tests/matrix/Matrix_test.cpp)
-#target_link_libraries(Matrix_test Task0 gtests_main)
-#add_test(NAME Matrix_test COMMAND Matrix_test)
+add_executable(Matrix_test tests/matrix/MatrixTest.cpp)     # mb more
+target_link_libraries(Matrix_test Task0 GTest::gtest GTest::gtest_main)
+add_test(NAME Matrix_test COMMAND Matrix_test)
 
-#add_executable(Vector_test tests/vector/Vatrix_test.cpp)
-#target_link_libraries(Vector_test Task0 gtests_main)
-#add_test(NAME Vector_test COMMAND Vector_test)
+add_executable(Vector_test tests/vector/VectorTest.cpp)     # mb more
+target_link_libraries(Vector_test Task0 GTest::gtest GTest::gtest_main)
+add_test(NAME Vector_test COMMAND Vector_test)
