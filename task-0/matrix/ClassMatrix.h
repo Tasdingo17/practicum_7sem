@@ -424,27 +424,46 @@ int Matrix<T>::get_size(){
 // This function removes them.
 template<class T>
 void Matrix<T>::_clear_fake_vals(){
-    for(const auto& elem: values){
-        if (abs(elem.second) < eps)
-            values.erase(elem.first);
+    //for(const auto& elem: values){
+    //    if (abs(elem.second) < eps)
+    //        values.erase(elem.first);
+    //}
+    std::unordered_set<coords, pair_hash> to_delete;
+    for(auto it = values.begin(); it != values.end(); it++){
+        if (abs(it->second) < eps)
+            to_delete.insert(it->first);
+    }
+
+    for (auto& key : to_delete) {
+        values.erase(key);
     }
 }
 
 template<>
 void Matrix<Complex_number<>>::_clear_fake_vals(){
-    for(const auto& elem: values){
-        if (elem.second.module_square() < eps * eps)
-            values.erase(elem.first);
+    std::unordered_set<coords, pair_hash> to_delete;
+    for(auto it = values.begin(); it != values.end(); it++){
+        if (it->second.module_square() < eps * eps)
+            to_delete.insert(it->first);
+    }
+
+    for (auto& key : to_delete) {
+        values.erase(key);
     }
 }
 
 
 template<>
 void Matrix<Rational_number>::_clear_fake_vals(){
+    std::unordered_set<coords, pair_hash> to_delete;
     Rational_number rat_eps = Rational_number::from_double(eps);
-    for(const auto& elem: values){
-        if (abs(elem.second) < rat_eps)
-            values.erase(elem.first);
+    for(auto it = values.begin(); it != values.end(); it++){
+        if (abs(it->second) < eps)
+            to_delete.insert(it->first);
+    }
+
+    for (auto& key : to_delete) {
+        values.erase(key);
     }
 }
 
