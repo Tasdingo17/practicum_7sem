@@ -1,4 +1,6 @@
 #include "Matrix_coords.h"
+#include "../exceptions/CommonExceptions.hpp"
+#include "../exceptions/MatrixExceptions.hpp"
 
 bool Matrix_coords::is_consistent() const{
     bool wrong_cond1 = left_x < -1 || left_y < -1 || right_x < -1 || right_y < -1;
@@ -15,7 +17,9 @@ Matrix_coords::Matrix_coords(const coords& left, const coords& right){
     left_y = left.second;
     right_x = right.first;
     right_y = right.second;
-    if (!is_consistent()) throw 8;  // TODO: make exception
+    if (!is_consistent()){
+        throw Init_error("Matrix_coord not constistent", left, right);
+    }
 }
 
 Matrix_coords::Matrix_coords(const coords& left): Matrix_coords(left, left){};
@@ -89,7 +93,9 @@ int Matrix_coords::get_right_y() const{
 Matrix_row_coord::Matrix_row_coord(): row_index(0){};
 
 Matrix_row_coord::Matrix_row_coord(int index){
-    if (index < 0) throw 1; // TODO: exception
+    if (index < 0) {
+        throw Init_error("Can't construct Matrix_row_coord by negative index: ", std::to_string(index));
+    }
     row_index = index;
 }
 
@@ -107,7 +113,9 @@ bool Matrix_row_coord::has(const coords& dot) const{
 Matrix_column_coord::Matrix_column_coord(): column_index(0){};
 
 Matrix_column_coord::Matrix_column_coord(int index){
-    if (index < 0) throw 1; // TODO: exception
+    if (index < 0){
+        throw Init_error("Can't construct Matrix_column_coord by negative index: ", std::to_string(index));
+    }
     column_index = index;
 }
 

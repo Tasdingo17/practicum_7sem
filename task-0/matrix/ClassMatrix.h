@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <map>
 #include <ostream>
-#include <sstream>
+#include <fstream>
 #include <string>
 #include <utility>
 #include <cmath>
@@ -14,6 +14,9 @@
 #include "Matrix_proxy.hpp"
 
 #include "../parsers/Parser.h"
+
+#include "../exceptions/CommonExceptions.hpp"
+#include "../exceptions/MatrixExceptions.hpp"
 
 #ifndef __Matr_vals__
 #define __Matr_vals__
@@ -97,7 +100,7 @@ public:
     std::map<int, T> get_row_vals(int idx);   // for vector
     std::map<int, T> get_column_vals(int idx);    // for vector
 
-    void to_file(const char* filename, bool append = false);       // TODO!
+    void to_file(const char* filename, bool append = false);
 };
 
 // Constructors and destructors
@@ -106,7 +109,7 @@ public:
 template<class T>
 Matrix<T>::Matrix(int _rows, int _columns, bool unar, bool fill_one):
     rows(_rows), columns(_columns){
-    if (unar && fill_one) throw 8;                 // TODO: special exception;
+    if (unar && fill_one) throw Flag_conflict("unar and fill_one flags are both set true");
     if (unar)
         for (int i = 0; i < std::min(rows, columns); i++)
             values[{i, i}] = T(1);
@@ -124,7 +127,10 @@ Matrix<T>::Matrix(int _rows, int _columns, const matr_vals<T>&  _values):
     rows(_rows), columns(_columns){
     for (const auto& elem : _values){
         coords tmp = elem.first;
-        if (!(tmp.first < rows && tmp.second < columns)) throw 5;   // TODO: make special exception
+        if (!(tmp.first < rows && tmp.second < columns)){
+            std::string tmp_pos = std::to_string(tmp.first) + ", " + std::to_string(tmp.second);
+            throw Init_error("Elements coordinates must be less then dimensions, but got: ", tmp_pos);
+        }
         if (!(abs(elem.second) < eps)){
             values[elem.first] = elem.second;
         }
@@ -136,7 +142,10 @@ Matrix<Complex_number<>>::Matrix(int _rows, int _columns, const matr_vals<Comple
     rows(_rows), columns(_columns){
     for (const auto& elem : _values){
         coords tmp = elem.first;
-        if (!(tmp.first < rows && tmp.second < columns)) throw 5;   // TODO: make special exception
+        if (!(tmp.first < rows && tmp.second < columns)){
+            std::string tmp_pos = std::to_string(tmp.first) + ", " + std::to_string(tmp.second);
+            throw Init_error("Elements coordinates must be less then dimensions, but got: ", tmp_pos);
+        }
         if (!(elem.second.module_square() < eps * eps)){
             values[elem.first] = elem.second;
         }
@@ -174,7 +183,7 @@ Matrix<T>::~Matrix(){
 
 template<class T>
 Matrix<T>::Matrix(const char* file_path){
-    throw 123;  // todo: not generally specialized
+    throw Init_error("Construction from file is supported only for value types Rational_number and Complex_number");
 }
 
 template<>
@@ -182,7 +191,7 @@ Matrix<Rational_number>::Matrix(const char* file_path){
     Parser parser;
     parser.parse_matrix(file_path);
     if (parser.get_type() != "rational"){
-        throw 9;    // todo: type mismatch exceptions
+        throw Type_error("Expected value type 'rational', got: ", parser.get_type());
     }
     rows = parser.get_rows_number();
     columns = parser.get_columns_number();
@@ -191,7 +200,10 @@ Matrix<Rational_number>::Matrix(const char* file_path){
         coords pos = elem.first;
         pos.first -= 1;     // in file numeration from 1
         pos.second -= 1;    // in file numeration from 1
-        if (!(pos.first < rows && pos.second < columns)) throw 5;   // TODO: make special exception
+        if (!(pos.first < rows && pos.second < columns)){
+            std::string tmp_pos = std::to_string(pos.first) + ", " + std::to_string(pos.second);
+            throw Init_error("Elements coordinates must be less then dimensions, but got: ", tmp_pos);
+        }
         Rational_number val(elem.second.first, elem.second.second);
         if (!(abs(val) < eps)){
             values[pos] = val;
@@ -204,7 +216,7 @@ Matrix<Complex_number<>>::Matrix(const char* file_path){
     Parser parser;
     parser.parse_matrix(file_path);
     if (parser.get_type() != "complex"){
-        throw 9;    // todo: type mismatch exceptions
+        throw Type_error("Expected value type 'complex', got: ", parser.get_type());
     }
     rows = parser.get_rows_number();
     columns = parser.get_columns_number();
@@ -213,7 +225,10 @@ Matrix<Complex_number<>>::Matrix(const char* file_path){
         coords pos = elem.first;
         pos.first -= 1;     // in file numeration from 1
         pos.second -= 1;    // in file numeration from 1
-        if (!(pos.first < rows && pos.second < columns)) throw 5;   // TODO: make special exception
+        if (!(pos.first < rows && pos.second < columns)){
+            std::string tmp_pos = std::to_string(pos.first) + ", " + std::to_string(pos.second);
+            throw Init_error("Elements coordinates must be less then dimensions, but got: ", tmp_pos);
+        }
         Complex_number<> val(std::stod(elem.second.first), std::stod(elem.second.second));
         if (!(val.module_square() < eps * eps)){
             values[pos] = val;
@@ -231,7 +246,10 @@ Matrix<Complex_number<>>::Matrix(const char* file_path){
 // They are cleared internally with call of some methods.
 template<class T>
 T& Matrix<T>::operator()(int i, int j){
-    if (!(0 <= i < rows && 0 <= j < columns )) throw 5;    // TODO: make special exception
+    if (!(0 <= i < rows && 0 <= j < columns )){
+        std::string tmp = std::to_string(i) + " " + std::to_string(j);
+        Out_of_range("Trying to access element by out of range coordinates: ", tmp);
+    }
     return values[{i, j}];
 }
 
@@ -243,21 +261,27 @@ T& Matrix<T>::operator()(const coords& pos){
 
 template<class T>
 Matrix<T>& Matrix<T>::operator=(const Matrix& other){
-    if (!same_shape(other)) throw 6;    // TODO: special exception
+    if (!same_shape(other)){
+        throw Shape_error("Wrong shape for operation '=': ", {rows, columns}, {other.rows, other.columns});
+    }
     values = other.values;
     return *this;
 }
 
 template<class T>
 Matrix<T>& Matrix<T>::operator=(Matrix&& other){
-    if (!same_shape(other)) throw 6;    // TODO: special exception
+    if (!same_shape(other)){
+        throw Shape_error("Wrong shape for operation '=': ", {rows, columns}, {other.rows, other.columns});
+    }
     values = std::move(other.values);
     return *this;
 }
 
 template<class T>
 Matrix<T> Matrix<T>::operator+(Matrix& other){
-    if (!same_shape(other)) throw 6;   // TODO: special exception
+    if (!same_shape(other)){
+        throw Shape_error("Wrong shape for operation '+': ", {rows, columns}, {other.rows, other.columns});
+    }
     decltype(values) tmp_vals = key_union(other);
     for (const auto& elem : tmp_vals){
         tmp_vals[elem.first] = values[elem.first] + other.values[elem.first];
@@ -271,7 +295,9 @@ Matrix<T> Matrix<T>::operator+(Matrix& other){
 
 template<class T>
 Matrix<T> Matrix<T>::operator-(Matrix& other){
-    if (!same_shape(other)) throw 6;   // TODO: special exception
+    if (!same_shape(other)) {
+        throw Shape_error("Wrong shape for operation '-': ", {rows, columns}, {other.rows, other.columns});
+    }
     decltype(values) tmp_vals = key_union(other);
     for (const auto& elem : tmp_vals){
         tmp_vals[elem.first] = values[elem.first] - other.values[elem.first];
@@ -285,7 +311,9 @@ Matrix<T> Matrix<T>::operator-(Matrix& other){
 
 template<class T>
 Matrix<T> Matrix<T>::operator*(Matrix& other){
-    if (columns != other.rows) throw 7;     // TODO: special exception
+    if (columns != other.rows){
+        throw Shape_error("Wrong shape for operation '*': ", {rows, columns}, {other.rows, other.columns});
+    }
     decltype(values) tmp_vals;
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < other.columns; j++) {
@@ -338,7 +366,7 @@ template<class T>
 Matrix_proxy<T> Matrix<T>::operator[](const Matrix_coords& coords){
     if (coords.has({rows, columns}) &&
         coords.get_right_x() != -1 && coords.get_right_y() != -1){
-        throw 3;       // TODO: exceptions out of range
+        throw Out_of_range("Trying to take rectangle slice with wrong range");
     }
     return Matrix_proxy<T>(*this, coords);
 }
@@ -346,7 +374,7 @@ Matrix_proxy<T> Matrix<T>::operator[](const Matrix_coords& coords){
 template<class T>
 Matrix_proxy<T> Matrix<T>::operator[](const Matrix_row_coord& row){
     if (row.get_row_index() < 0 || rows <= row.get_row_index()){
-        throw 3;    //OutOfRangeException();
+        throw Out_of_range("Trying to take row slice with wrong range");
     }
     return Matrix_proxy<T>(*this, row);
 }
@@ -354,7 +382,7 @@ Matrix_proxy<T> Matrix<T>::operator[](const Matrix_row_coord& row){
 template<class T>
 Matrix_proxy<T> Matrix<T>::operator[](const Matrix_column_coord& column){
     if (column.get_column_index() < 0 || columns <= column.get_column_index()){
-        throw 3;    // OutOfRangeException();
+        throw Out_of_range("Trying to take column slice with wrong range");
     }
     return Matrix_proxy<T>(*this, column);
 }
@@ -502,7 +530,7 @@ std::ofstream Matrix<T>::_open_write_file(const char* filename, bool append) con
         file_data.open(filename);
     }
     if (!file_data.is_open()){
-        throw 10;   // todo:exceptions (!note: not only non-exsisting also permission failures)
+        throw File_open_error("Fail opening file: ", std::string(filename));
     }
     return file_data;
 }
@@ -521,7 +549,7 @@ void Matrix<T>::to_file(const char* filename, bool append){
     }
 
     file_data << res;
-    if (file_data.fail()) throw 12; //todo: exceptions
+    //if (file_data.fail()) throw 12; //todo: exceptions
     file_data.close();
 }
 
@@ -538,7 +566,7 @@ void Matrix<Rational_number>::to_file(const char* filename, bool append){
     }
 
     file_data << res;
-    if (file_data.fail()) throw 12; //todo: exceptions
+    //if (file_data.fail()) throw 12; //todo: exceptions
     file_data.close();
 }
 
@@ -555,7 +583,7 @@ void Matrix<Complex_number<>>::to_file(const char* filename, bool append){
     }
 
     file_data << res;
-    if (file_data.fail()) throw 12; //todo: exceptions
+    //if (file_data.fail()) throw 12; //todo: exceptions
     file_data.close();
 }
 

@@ -5,6 +5,9 @@
 #include <unordered_map>
 #include "Matrix_coords.h"
 
+#include "../exceptions/CommonExceptions.hpp"
+#include "../exceptions/MatrixExceptions.hpp"
+
 template<class T>
 class Matrix;
 
@@ -75,14 +78,14 @@ public:
 
     // Get size of slice
     std::pair<int, int> get_dim() const{
-        if (matr_ptr == nullptr) throw 1;     // TODO: exceptions
+        if (matr_ptr == nullptr) throw Proxy_error("Accessing inactive proxy");
         int rows = m_coords.right_x - m_coords.left_x + 1;
         int columns = m_coords.right_y - m_coords.left_y + 1;
         return {rows, columns};
     }
 
     double get_eps() const{
-        if (matr_ptr == nullptr) throw 1;     // TODO: exceptions
+        if (matr_ptr == nullptr) throw Proxy_error("Accessing inactive proxy");
         return matr_ptr->eps;
     }
 
@@ -92,23 +95,30 @@ public:
 
     // return row number if proxy type is ROW
     int get_row_coord() const{
-        if (type != Matrix_proxy_type::ROW) throw 1;    // TODO:: exceptions
+        if (type != Matrix_proxy_type::ROW){
+            throw Proxy_error("get_row_coord() is available only for Matrix_proxy_type::ROW");
+        }
         return m_coords.left_x;
     }
 
     // return column number if proxy type is COLUMN
     int get_column_coord() const{
-        if (type != Matrix_proxy_type::COLUMN) throw 2; // TODO: exceptions
+        if (type != Matrix_proxy_type::COLUMN){
+            throw Proxy_error("get_column_coord() is available only for Matrix_proxy_type::COLUMN");
+        }
         return m_coords.left_y;
     }
 
     T& operator()(const coords& elem) {
-        if (matr_ptr == nullptr) throw 1;     // TODO:exceptions
-        if(!is_in_bounds(elem.first, elem.second)) throw 2;
+        if (matr_ptr == nullptr) throw Proxy_error("Accessing inactive proxy");
+        if(!is_in_bounds(elem.first, elem.second)){
+            std::string tmp = std::to_string(elem.first) + ", " + std::to_string(elem.second);
+            throw Out_of_range("Out of slice bounds: ", tmp);
+        }
         if (type == Matrix_proxy_type::RECTANGLE) {
             return matr_ptr->operator()(elem.first, elem.second);
         } else {
-            throw 3;  //IllegalStateException("Cannot get element of a row/column slice by two coordinates.");
+            throw Type_error("Can't get element of a row/column slice by two coordinates");
         }
     }
 
@@ -118,28 +128,28 @@ public:
     }
         
     T& operator()(int idx) {
-        if (matr_ptr == nullptr) throw 1;     // TODO: exceptions
+        if (matr_ptr == nullptr) throw Proxy_error("Accessing inactive proxy");
         switch (type) {
             case Matrix_proxy_type::ROW:
                 return matr_ptr->operator()({get_row_coord(), idx});
             case Matrix_proxy_type::COLUMN:
                 return matr_ptr->operator()({idx, get_column_coord()});
             case Matrix_proxy_type::RECTANGLE:
-                throw 3; //IllegalStateException("Cannot get element of a rectangle slice by single coordinate.");
+                throw Type_error("Can't get element of a rectangle slice by single coordinate.");
         }
     }
 
     // values of current slice as std::unordered_map where coords is a key.
     // vector version
     std::map<int, T> get_values_as_map() const {
-        if (matr_ptr == nullptr) throw 3; // TODO:exceptions
+        if (matr_ptr == nullptr) throw Proxy_error("Accessing inactive proxy");
         switch (type) {
             case Matrix_proxy_type::ROW:
                 return matr_ptr->get_row_vals(get_row_coord());
             case Matrix_proxy_type::COLUMN:
                 return matr_ptr->get_column_vals(get_column_coord());
             case Matrix_proxy_type::RECTANGLE:
-                throw 1;        //IllegalStateException("Cannot get rectangle slice values as std::map");
+                throw Type_error("Cannot get rectangle slice values as std::map");
         }
         return std::map<int, T>();      // to silence warnings
     }
@@ -148,7 +158,7 @@ public:
     // values of current slice as std::unordered_map where coords is a key.
     // matrix version
     matr_vals<T> get_values_as_hash_map() const {
-        if (matr_ptr == nullptr) throw 3;   // TODO exceptions
+        if (matr_ptr == nullptr) throw Proxy_error("Accessing inactive proxy");
         return matr_ptr->get_submatrix_vals(m_coords);
     }
 

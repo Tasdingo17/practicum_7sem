@@ -54,4 +54,30 @@ public:
     }
 };
 
+class Type_error: public std::exception{
+private:
+    std::string m_error;
+public:
+    Type_error(const std::string& error, const std::string& _val=std::string{}){
+        m_error = error + _val;
+    }
+
+    const char* what() const noexcept override {  
+        return m_error.c_str(); 
+    }
+};
+
+class Out_of_range: public std::exception{
+private:
+    std::string m_error;
+public:
+    Out_of_range(const std::string& error, const std::string& _val=std::string{}){
+        m_error = error + _val;
+    }
+
+    const char* what() const noexcept override {  
+        return m_error.c_str(); 
+    }
+};
+
 #endif
