@@ -344,7 +344,7 @@ Matrix_proxy<T> Matrix<T>::operator[](const Matrix_coords& coords){
 }
 
 template<class T>
-Matrix_proxy<T> Matrix<T>::operator[](const Matrix_row_coord& row) {
+Matrix_proxy<T> Matrix<T>::operator[](const Matrix_row_coord& row){
     if (row.get_row_index() < 0 || rows <= row.get_row_index()){
         throw 3;    //OutOfRangeException();
     }
@@ -352,7 +352,7 @@ Matrix_proxy<T> Matrix<T>::operator[](const Matrix_row_coord& row) {
 }
 
 template<class T>
-Matrix_proxy<T> Matrix<T>::operator[](const Matrix_column_coord& column) {
+Matrix_proxy<T> Matrix<T>::operator[](const Matrix_column_coord& column){
     if (column.get_column_index() < 0 || columns <= column.get_column_index()){
         throw 3;    // OutOfRangeException();
     }
@@ -433,10 +433,10 @@ template<class T>
 std::map<int, T> Matrix<T>::get_row_vals(int idx){
     //_clear_fake_vals();
     Matrix_row_coord range(idx);
-    std::map<coords, T> res_vals;
+    std::map<int, T> res_vals;
         for (const auto& elem: values) {
-            if (range.has(elem.first.first)) {      // elem.first.first - X coord
-                res_vals.insert({elem.first.first, elem.second});
+            if (range.has(elem.first)) {      // elem.first - X coord
+                res_vals.insert({elem.first.second, elem.second});  // {col_number, val}
             }
         }
     return res_vals;
@@ -446,10 +446,10 @@ template<class T>
 std::map<int, T> Matrix<T>::get_column_vals(int idx){
     //_clear_fake_vals();
     Matrix_column_coord range(idx);
-    std::unordered_map<coords, T> res_vals;
+    std::map<int, T> res_vals;
         for (const auto& elem: values) {
-            if (range.has(elem.first.second)) {     // elem.first.second - Y coord
-                res_vals.insert({elem.first.second, elem.second});
+            if (range.has(elem.first)) {     // elem.first.second - Y coord
+                res_vals.insert({elem.first.first, elem.second});   // {row_number, val}
             }
         }
     return res_vals;

@@ -36,15 +36,20 @@ public:
     T& operator()(int i);
     Vector& operator=(const Vector& other);
     Vector& operator=(Vector&& other);
-    Vector operator+(Vector& other); // return type of left operand
-    Vector operator-(Vector& other); // return type of left operand
+
+    template<typename TValueLeft, typename TValueRight>
+    friend Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, Vector<TValueRight> rhs); // return type of left operand
+
+    template<typename TValueLeft, typename TValueRight>
+    friend Vector<TValueLeft> operator-(Vector<TValueLeft> lhs, Vector<TValueRight> rhs); // return type of left operand
+
     Vector operator-();   //unar -
 
     bool operator==(const Vector& other);       // todo?
     bool operator!=(const Vector& other);       // todo?
 
     template<typename TValueLeft, typename TValueRight>
-    friend Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, const TValueRight& rhs);
+    friend Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, TValueRight& rhs);
 
     template<typename TValueLeft, typename TValueRight>
     friend Vector<TValueLeft> operator-(Vector<TValueLeft> lhs, const TValueRight& rhs);
@@ -54,6 +59,9 @@ public:
 
     template<typename TValueLeft, typename TValueRight>
     friend Vector<TValueLeft> operator/(Vector<TValueLeft> lhs, const TValueRight& rhs);
+
+    // only vector(1xM) * matrix (MxN)
+    Vector<T> operator*(Matrix<T>& rhs);
 
     std::string to_string();
     static void set_eps(double new_eps);
@@ -113,6 +121,14 @@ template<class T>
 Vector<T>::Vector(Vector&& other){
     max_size = std::move(other.max_size);
     values = std::move(other.values);
+}
+
+template<class T>
+Vector<T>::Vector(const Matrix_proxy<T>& proxy){
+    if (proxy.get_type() == Matrix_proxy_type::RECTANGLE) throw 1;      // todo exception
+    max_size = std::max(proxy.get_dim().first, proxy.get_dim().second);
+    values = proxy.get_values_as_map();
+    _clear_fake_vals();     // since precision in vector and matrix can differ;
 }
 
 template<class T>
@@ -190,32 +206,28 @@ Vector<T>& Vector<T>::operator=(Vector&& other){
 }
 
 // return type of left operand
-template<class T>
-Vector<T> Vector<T>::operator+(Vector& other){
-    if (!same_shape(other)) throw 6;   // TODO: special exception
-    decltype(values) tmp_vals = key_union(other);
+template<typename TValueLeft, typename TValueRight>
+Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, Vector<TValueRight> rhs){ // return type of left operand{
+    if (!lhs.same_shape(rhs)) throw 6;   // TODO: special exception
+    decltype(lhs.values) tmp_vals = lhs.key_union(rhs);
     for (const auto& elem : tmp_vals){
-        tmp_vals[elem.first] = values[elem.first] + other.values[elem.first];
+        tmp_vals[elem.first] = lhs.values[elem.first] + rhs.values[elem.first];
     }
-    Vector<T> res(max_size, tmp_vals);
+    Vector<TValueLeft> res(lhs.max_size, tmp_vals);
 
-    _clear_fake_vals();
-    other._clear_fake_vals();
     return res;
 }
 
 // return type of left operand
-template<class T>
-Vector<T> Vector<T>::operator-(Vector& other){
-    if (!same_shape(other)) throw 6;   // TODO: special exception
-    decltype(values) tmp_vals = key_union(other);
+template<typename TValueLeft, typename TValueRight>
+Vector<TValueLeft> operator-(Vector<TValueLeft> lhs, Vector<TValueRight> rhs){
+    if (!lhs.same_shape(rhs)) throw 6;   // TODO: special exception
+    decltype(lhs.values) tmp_vals = lhs.key_union(rhs);
     for (const auto& elem : tmp_vals){
-        tmp_vals[elem.first] = values[elem.first] - other.values[elem.first];
+        tmp_vals[elem.first] = lhs.values[elem.first] - rhs.values[elem.first];
     }
-    Vector<T> res(max_size, tmp_vals);
+    Vector<TValueLeft> res(lhs.max_size, tmp_vals);
 
-    _clear_fake_vals();
-    other._clear_fake_vals();
     return res;
 }
 
@@ -272,6 +284,22 @@ Vector<TValueLeft> operator/(Vector<TValueLeft> lhs, const TValueRight& rhs){
         elem.second /= rhs;
     }
     return lhs;
+}
+
+// vector (1xM) * matrix (MxN), res is linear sum of matrix rows
+template<class T>
+Vector<T> Vector<T>::operator*(Matrix<T>& matrix){
+    if (max_size != matrix.get_rows_number()) throw 7;  // TODO: wrong dim exception
+    Vector<T> res(matrix.get_columns_number());    // 1xN
+    for(const auto& vec_val : values){                  
+        int row_number = vec_val.first;
+        T val = vec_val.second;
+        Vector<T> tmp_vec(matrix[Matrix_row_coord(row_number)]);
+        res = res + (tmp_vec * val);
+    }
+
+    res._clear_fake_vals();
+    return res;
 }
 
 //////////////////////////////////

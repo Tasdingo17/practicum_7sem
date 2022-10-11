@@ -86,6 +86,10 @@ public:
         return matr_ptr->eps;
     }
 
+    Matrix_proxy_type get_type() const{
+        return type;
+    }
+
     // return row number if proxy type is ROW
     int get_row_coord() const{
         if (type != Matrix_proxy_type::ROW) throw 1;    // TODO:: exceptions
@@ -137,6 +141,7 @@ public:
             case Matrix_proxy_type::RECTANGLE:
                 throw 1;        //IllegalStateException("Cannot get rectangle slice values as std::map");
         }
+        return std::map<int, T>();      // to silence warnings
     }
 
 
