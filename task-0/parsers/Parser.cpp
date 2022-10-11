@@ -268,9 +268,9 @@ void Parser::parse_matrix(const char* filename){
         _parse_matrix_config(file_data);
         _set_delimeters();
         _parse_matrix_values(file_data);
-    } catch (std::exception& except){
+    } catch (...){
         file_data.close();
-        throw except;
+        throw;
     }
 
     file_data.close();
