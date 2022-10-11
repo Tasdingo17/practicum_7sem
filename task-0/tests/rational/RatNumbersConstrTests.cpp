@@ -1,6 +1,6 @@
 /**
  * @file RatNumbersConstrTests.cpp
- * @brief Tests for Rational_numbers constructor
+ * @brief Tests for Rational_number constructors
  */
 
 #include "../../rational/ClassRationalNumber.h"

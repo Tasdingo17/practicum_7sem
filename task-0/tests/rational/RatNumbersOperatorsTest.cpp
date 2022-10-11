@@ -1,6 +1,6 @@
 /**
  * @file RatNumbersOperatorsTest.cpp
- * @brief Tests for Rational_numbers methods and operators
+ * @brief Tests for Rational_number methods and operators
  */
 
 #include "../../rational/ClassRationalNumber.h"
@@ -77,19 +77,3 @@ TEST(RatNumberMethodsTest, Assignment){
     EXPECT_EQ(b.to_string(), "<34/35>");
 }
 
-TEST(RatNumberMethodsTest, Casts){
-    Rational_number a(34, 35), b;
-    b = a;
-    EXPECT_EQ(b.to_string(), "<34/35>");
-}
-
-TEST(RatNumberMethodsTest, Others){
-    Rational_number a(34, 35), b;
-    b = a;
-    EXPECT_EQ(b.to_string(), "<34/35>");
-}
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
