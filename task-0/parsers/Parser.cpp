@@ -3,6 +3,9 @@
 #include <sstream>
 #include <algorithm>
 #include "Parser.h"
+#include "../exceptions/CommonExceptions.hpp"
+#include "../exceptions/ParserExceptions.hpp"
+
 
 // return true if str.length() == 0
 bool empty_line(const std::string& str){
@@ -36,7 +39,7 @@ int string_to_number(const std::string& s){
     if (is_number(s)){
         return std::stoi(s);
     } else {
-        throw 14;       // todo: not a number exception
+        throw Not_a_number("Not a number during parsing: ", s);
     }
 }
 
@@ -59,18 +62,22 @@ void Parser::_parse_matrix_config(std::ifstream& file_data){
 
         std::stringstream line(tmp_line);
         line >> tmp_word;
-        if (tmp_word != "matrix") throw 12;     //todo: wrong format exception
+        if (tmp_word != "matrix"){
+            throw Parser_error("Parser_error: wrong struct type, expected 'matrix', got: ", tmp_word);
+        }
         
         line >> type;
         if (!is_possible_type(type)){
-            throw 13;                      // todo: exception
+            throw Parser_error("Parser_error: unsupported elements parsing type: ", type);
         }
 
         line >> tmp_word;
         rows = string_to_number(tmp_word);
         line >> tmp_word;
         columns = string_to_number(tmp_word);
-        if (rows <= 0 || columns <= 0) throw 14;    // todo: wrong dims exceptions
+        if (rows <= 0 || columns <= 0){
+            throw Parser_error("Parser_error: matrix rows and column must be possitive integers");
+        }
         break;
     }
 }
@@ -83,16 +90,20 @@ void Parser::_parse_vector_config(std::ifstream& file_data){
 
         std::stringstream line(tmp_line);
         line >> tmp_word;
-        if (tmp_word != "vector") throw 12;     //todo: wrong format exception
+        if (tmp_word != "vector"){
+            throw Parser_error("Parser_error: wrong struct type, expected 'vector', got: ", tmp_word);
+        }
         
         line >> type;
         if (!is_possible_type(type)){
-            throw 13;                      // todo: exception
+            throw Parser_error("Parser_error: unsupported elements parsing type: ", type);
         }
 
         line >> tmp_word;
         max_size = string_to_number(tmp_word);
-        if (max_size <= 0) throw 14;    // todo: wrong dims exceptions
+        if (max_size <= 0){
+            throw Parser_error("Parser_error: vector max_size must be possitive integer");
+        }
         break;
     }
 }
@@ -108,12 +119,12 @@ void Parser::_set_delimeters(){
         delim_middle = ',';
         delim_end = ')';
         is_single_val = false;
-    } else if (type == "bit"){      // TO CHECK!
+    } else if (type == "bit"){
         is_single_val = true;
         delim_start = delim_end = delim_middle = '\0';
-    } else {
+    } else {                    // unreachable?
         is_single_val = true;   // he-he
-        throw 4;      // todo: unsupported type exceptions
+        throw Parser_error("Unsupported value type: ", type);
     }
     return;
 }
@@ -126,7 +137,9 @@ coords Parser::_parse_matrix_coords(std::stringstream& line){
     x_coord = string_to_number(tmp_word);
     line >> tmp_word;
     y_coord = string_to_number(tmp_word);
-    if (x_coord <= 0 || y_coord <= 0) throw 6;  // TODO: wrong coordinate exceptions
+    if (x_coord <= 0 || y_coord <= 0){
+        throw Parser_error("Parser_error: matrix element coordinates must be possitive integers!");
+    }
     return {x_coord, y_coord};
 }
 
@@ -135,7 +148,9 @@ int Parser::_parse_vector_coords(std::stringstream& line){
     int pos;
     line >> tmp_word;
     pos = string_to_number(tmp_word);
-    if (pos <= 0) throw 6;  // TODO: wrong coordinate exceptions
+    if (pos <= 0){
+        throw Parser_error("Parser_error: vector element index must be possitive integer!");
+    }
     return pos;
 }
 
@@ -189,10 +204,12 @@ pair_str_vals Parser::_parse_val(std::stringstream& line){
     } else if (type == "bit" || is_single_val){
         // for future
         pair_str_vals res = std::move(__parse_single_val(line));
-        if (res.first != "1" && res.first != "0") throw 17;  // TODO: exception wrong bit
+        if (res.first != "1" && res.first != "0"){
+            throw Parser_error("bit value must be 1 or 0, got: ", res.first);
+        }
             return res;
     } else {
-        throw 5;    // todo:: unsupported class exception
+        throw Parser_error("Unsupported value type: ", type);
     }
 }
 
@@ -236,7 +253,7 @@ std::ifstream Parser::_open_file_safe(const char* filename) const{
     std::ifstream file_data;
     file_data.open(filename);
     if (!file_data.is_open()){
-        throw 10;   // todo:exceptions (!note: not only non-exsisting also permission failures)
+        throw File_open_error("Fail opening file: ", std::string(filename));
     }
     return file_data;
 }

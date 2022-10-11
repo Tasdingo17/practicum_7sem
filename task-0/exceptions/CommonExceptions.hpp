@@ -28,4 +28,30 @@ public:
     }
 };
 
+class Not_a_number : public std::exception{
+private:
+    std::string m_error;
+public:
+    Not_a_number(const std::string& error, const std::string& _val=std::string{}){
+        m_error = error + _val;
+    }
+
+    const char* what() const noexcept override {  
+        return m_error.c_str(); 
+    }
+};
+
+class File_open_error: public std::exception{
+private:
+    std::string m_error;
+public:
+    File_open_error(const std::string& error, const std::string& _val=std::string{}){
+        m_error = error + _val;
+    }
+
+    const char* what() const noexcept override {  
+        return m_error.c_str(); 
+    }
+};
+
 #endif

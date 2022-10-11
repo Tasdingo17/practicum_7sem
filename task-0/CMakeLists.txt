@@ -26,6 +26,7 @@ set(Rational_number rational/ClassRationalNumber.h
 set(Exceptions exceptions/CommonExceptions.hpp
                exceptions/ComplNumbersExceptions.hpp
                exceptions/RatNumbersExceptions.hpp
+               exceptions/ParserExceptions.hpp
    )
 
 set(Complex    complex/ClassComplex.h
