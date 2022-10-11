@@ -91,7 +91,7 @@ public:
     Matrix_proxy<T> operator[](const Matrix_column_coord& row);
     
     // number of non-zero elems in values
-    int size();   
+    int get_size();   
     std::string to_string();
     static void set_eps(double new_eps);
     static double get_eps();
@@ -413,7 +413,7 @@ matr_vals<T> Matrix<T>::key_union(const Matrix& other) const{
 
 // number of elems in values
 template<class T>
-int Matrix<T>::size(){
+int Matrix<T>::get_size(){
     _clear_fake_vals();
     return values.size();
 }
