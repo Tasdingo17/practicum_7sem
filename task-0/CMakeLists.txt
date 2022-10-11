@@ -28,6 +28,7 @@ set(Exceptions exceptions/CommonExceptions.hpp
                exceptions/RatNumbersExceptions.hpp
                exceptions/ParserExceptions.hpp
                exceptions/MatrixExceptions.hpp
+               exceptions/VectorExceptions.hpp
    )
 
 set(Complex    complex/ClassComplex.h

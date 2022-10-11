@@ -9,6 +9,9 @@
 #include"../complex/ClassComplex.h"
 #include"../matrix/ClassMatrix.h"
 
+#include"../exceptions/CommonExceptions.hpp"
+#include"../exceptions/VectorExceptions.hpp"
+
 template<class T>
 using vect_vals = std::map<int, T>;
 
@@ -30,7 +33,7 @@ public:
 
     explicit Vector(const Matrix_proxy<T>& proxy);
 
-    // Constructor from filename (todo: parser)
+    // Constructor from filename
     explicit Vector(const char* file_path);
 
     T& operator()(int i);
@@ -45,8 +48,8 @@ public:
 
     Vector operator-();   //unar -
 
-    bool operator==(const Vector& other);       // todo?
-    bool operator!=(const Vector& other);       // todo?
+    bool operator==(const Vector& other);       // not implemented
+    bool operator!=(const Vector& other);       // not implemented
 
     template<typename TValueLeft, typename TValueRight>
     friend Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, TValueRight& rhs);
@@ -72,7 +75,7 @@ public:
     //non-zero elements
     int get_size();
 
-    void to_file(const char* filename, bool append = false);       // TODO!
+    void to_file(const char* filename, bool append = false);
 };
 
 // Constructors and destructors
@@ -92,7 +95,9 @@ Vector<T>::Vector(int _max_size, const vect_vals<T>&  _values):
     max_size(_max_size){
     for (const auto& elem : _values){
         int pos = elem.first;
-        if (!(pos < max_size)) throw 5;   // TODO: make special exception
+        if (!(pos < max_size)){
+            throw Init_error("Position in vector must be less than max_size, got: ", std::to_string((pos)));
+        }
         if (!(abs(elem.second) < eps)){
             values[pos] = elem.second;
         }
@@ -104,7 +109,9 @@ Vector<Complex_number<>>::Vector(int _max_size, const vect_vals<Complex_number<>
     max_size(_max_size){
     for (const auto& elem : _values){
         int pos = elem.first;
-        if (!(pos < max_size)) throw 5;   // TODO: make special exception
+        if (!(pos < max_size)){
+            throw Init_error("Position in vector must be less than max_size, got: ", std::to_string((pos)));
+        }
         if (!(elem.second.module_square() < eps * eps)){
             values[elem.first] = elem.second;
         }
@@ -125,7 +132,9 @@ Vector<T>::Vector(Vector&& other){
 
 template<class T>
 Vector<T>::Vector(const Matrix_proxy<T>& proxy){
-    if (proxy.get_type() == Matrix_proxy_type::RECTANGLE) throw 1;      // todo exception
+    if (proxy.get_type() == Matrix_proxy_type::RECTANGLE){
+        throw Type_error("Can't initialize vector with Rectangle slice");
+    }
     max_size = std::max(proxy.get_dim().first, proxy.get_dim().second);
     values = proxy.get_values_as_map();
     _clear_fake_vals();     // since precision in vector and matrix can differ;
@@ -133,7 +142,7 @@ Vector<T>::Vector(const Matrix_proxy<T>& proxy){
 
 template<class T>
 Vector<T>::Vector(const char* file_path){
-    throw 123;  // todo: not generally specialized
+    throw Init_error("Construction from file is supported only for value types Rational_number and Complex_number");
 }
 
 template<>
@@ -141,14 +150,16 @@ Vector<Rational_number>::Vector(const char* file_path){
     Parser parser;
     parser.parse_vector(file_path);
     if (parser.get_type() != "rational"){
-        throw 9;    // todo: type mismatch exceptions
+        throw Type_error("Expected value type 'rational', got: ", parser.get_type());
     }
     max_size = parser.get_max_size();
 
     for (const auto& elem : parser.get_vector_vals()){
         int pos = elem.first;
         pos -= 1;     // in file numeration from 1
-        if (!(pos < max_size)) throw 5;   // TODO: make special exception
+        if (!(pos < max_size)){
+            throw Init_error("Position in vector must be less than max_size, got: ", std::to_string((pos)));
+        }
         Rational_number val(elem.second.first, elem.second.second);
         if (!(abs(val) < eps)){
             values[pos] = val;
@@ -161,14 +172,16 @@ Vector<Complex_number<>>::Vector(const char* file_path){
     Parser parser;
     parser.parse_vector(file_path);
     if (parser.get_type() != "complex"){
-        throw 9;    // todo: type mismatch exceptions
+        throw Type_error("Expected value type 'complex', got: ", parser.get_type());
     }
     max_size = parser.get_max_size();
 
     for (const auto& elem : parser.get_vector_vals()){
         int pos = elem.first;
         pos -= 1;   // in file numeration from 1
-        if (!(pos < max_size)) throw 5;   // TODO: make special exception
+        if (!(pos < max_size)){
+            throw Init_error("Position in vector must be less than max_size, got: ", std::to_string((pos)));
+        }
         Complex_number<> val(std::stod(elem.second.first), std::stod(elem.second.second));
         if (!(val.module_square() < eps * eps)){
             values[pos] = val;
@@ -187,20 +200,26 @@ Vector<Complex_number<>>::Vector(const char* file_path){
 // They are cleared internally with call of some methods.
 template<class T>
 T& Vector<T>::operator()(int i){
-    if (!(0<= i < max_size)) throw 5;    // TODO: make special exception
+    if (!(0<= i < max_size)){
+        throw Out_of_range("Trying to access element by out of range index: ", std::to_string(i));
+    } 
     return values[i];
 }
 
 template<class T>
 Vector<T>& Vector<T>::operator=(const Vector& other){
-    if (!same_shape(other)) throw 6;    // TODO: special exception
+    if (!same_shape(other)){
+        throw Shape_error("Wrong shapes for operator '-': ", max_size, other.max_size);
+    }
     values = other.values;
     return *this;
 }
 
 template<class T>
 Vector<T>& Vector<T>::operator=(Vector&& other){
-    if (!same_shape(other)) throw 6;    // TODO: special exception
+    if (!same_shape(other)){
+        throw Shape_error("Wrong shapes for operator '-': ", max_size, other.max_size);
+    }
     values = std::move(other.values);
     return *this;
 }
@@ -208,7 +227,9 @@ Vector<T>& Vector<T>::operator=(Vector&& other){
 // return type of left operand
 template<typename TValueLeft, typename TValueRight>
 Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, Vector<TValueRight> rhs){ // return type of left operand{
-    if (!lhs.same_shape(rhs)) throw 6;   // TODO: special exception
+    if (!lhs.same_shape(rhs)){
+        throw Shape_error("Wrong shapes for operator '+': ", lhs.max_size, rhs.max_size);
+    }
     decltype(lhs.values) tmp_vals = lhs.key_union(rhs);
     for (const auto& elem : tmp_vals){
         tmp_vals[elem.first] = lhs.values[elem.first] + rhs.values[elem.first];
@@ -221,7 +242,9 @@ Vector<TValueLeft> operator+(Vector<TValueLeft> lhs, Vector<TValueRight> rhs){ /
 // return type of left operand
 template<typename TValueLeft, typename TValueRight>
 Vector<TValueLeft> operator-(Vector<TValueLeft> lhs, Vector<TValueRight> rhs){
-    if (!lhs.same_shape(rhs)) throw 6;   // TODO: special exception
+    if (!lhs.same_shape(rhs)){
+        throw Shape_error("Wrong shapes for operator '-': ", lhs.max_size, rhs.max_size);
+    }
     decltype(lhs.values) tmp_vals = lhs.key_union(rhs);
     for (const auto& elem : tmp_vals){
         tmp_vals[elem.first] = lhs.values[elem.first] - rhs.values[elem.first];
@@ -278,7 +301,9 @@ Vector<TValueLeft> operator*(Vector<TValueLeft> lhs, const TValueRight& rhs){
 
 template<typename TValueLeft, typename TValueRight>
 Vector<TValueLeft> operator/(Vector<TValueLeft> lhs, const TValueRight& rhs){
-    if (rhs == TValueRight((int) 0)) throw 6; // todo: ZeroDivision
+    if (rhs == TValueRight((int) 0)){
+        throw Zero_division("Zero division (vector / number)!");
+    }
     Vector<TValueLeft> res(lhs);
     for (auto& elem : res.values) {
         elem.second /= rhs;
@@ -289,7 +314,10 @@ Vector<TValueLeft> operator/(Vector<TValueLeft> lhs, const TValueRight& rhs){
 // vector (1xM) * matrix (MxN), res is linear sum of matrix rows
 template<class T>
 Vector<T> Vector<T>::operator*(Matrix<T>& matrix){
-    if (max_size != matrix.get_rows_number()) throw 7;  // TODO: wrong dim exception
+    if (max_size != matrix.get_rows_number()){
+        std::pair<int, int> matr_shape(matrix.get_rows_number(), matrix.get_columns_number());
+        throw Shape_error("Wrong shapes for (vector * matrix): ", {1, max_size}, matr_shape);
+    }
     Vector<T> res(matrix.get_columns_number());    // 1xN
     for(const auto& vec_val : values){                  
         int row_number = vec_val.first;
@@ -429,7 +457,7 @@ std::ofstream Vector<T>::_open_write_file(const char* filename, bool append) con
         file_data.open(filename);
     }
     if (!file_data.is_open()){
-        throw 10;   // todo:exceptions (!note: not only non-exsisting also permission failures)
+        throw File_open_error("Fail opening file: ", std::string(filename));
     }
     return file_data;
 }
@@ -446,7 +474,7 @@ void Vector<T>::to_file(const char* filename, bool append){
     }
 
     file_data << res;
-    if (file_data.fail()) throw 12; //todo: exceptions
+    //if (file_data.fail()) throw 12; //todo: exceptions
     file_data.close();
 }
 
@@ -462,7 +490,7 @@ void Vector<Rational_number>::to_file(const char* filename, bool append){
     }
 
     file_data << res;
-    if (file_data.fail()) throw 12; //todo: exceptions
+    //if (file_data.fail()) throw 12; //todo: exceptions
     file_data.close();
 }
 
@@ -478,7 +506,7 @@ void Vector<Complex_number<>>::to_file(const char* filename, bool append){
     }
 
     file_data << res;
-    if (file_data.fail()) throw 12; //todo: exceptions
+    //if (file_data.fail()) throw 12; //todo: exceptions
     file_data.close();
 }
 
