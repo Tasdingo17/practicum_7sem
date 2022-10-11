@@ -18,6 +18,9 @@
 #include "../exceptions/CommonExceptions.hpp"
 #include "../exceptions/MatrixExceptions.hpp"
 
+#include "../rational/ClassRationalNumber.h"
+#include "../complex/ClassComplex.h"
+
 #ifndef __Matr_vals__
 #define __Matr_vals__
 struct pair_hash{

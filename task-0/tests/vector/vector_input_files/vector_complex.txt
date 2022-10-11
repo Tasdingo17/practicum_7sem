@@ -1,0 +1,12 @@
+#
+# This f i l e d e s c r i b e s
+# sparse vector
+#
+
+vector complex 50000
+
+1    (100 ,0.201)
+6000 (0 ,2.0)
+
+7    ( 2 , 0.0 ) # spaces
+22   ( 34 , 1 . 1 )
