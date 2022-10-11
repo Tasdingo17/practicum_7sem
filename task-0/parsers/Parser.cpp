@@ -264,9 +264,14 @@ void Parser::parse_matrix(const char* filename){
     
     std::ifstream file_data = _open_file_safe(filename);
     
-    _parse_matrix_config(file_data);
-    _set_delimeters();
-    _parse_matrix_values(file_data);
+    try{
+        _parse_matrix_config(file_data);
+        _set_delimeters();
+        _parse_matrix_values(file_data);
+    } catch (std::exception& except){
+        file_data.close();
+        throw except;
+    }
 
     file_data.close();
 }
@@ -277,9 +282,14 @@ void Parser::parse_vector(const char* filename){
     
     std::ifstream file_data = _open_file_safe(filename);
 
-    _parse_vector_config(file_data);
-    _set_delimeters();
-    _parse_vector_values(file_data);
+    try{
+        _parse_vector_config(file_data);
+        _set_delimeters();
+        _parse_vector_values(file_data);
+    } catch (...){
+        file_data.close();
+        throw;
+    }
 
     file_data.close();
 }
