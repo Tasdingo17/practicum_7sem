@@ -1,0 +1,9 @@
+#
+# This f i l e d e s c r i b e s
+# sparse vector
+#
+matrix rational 50000 5000
+1    1  <100>
+6000 2  <23 / 5>
+7    1  <-5/3>
+22   2  < 44 /1 >
