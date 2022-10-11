@@ -350,18 +350,28 @@ Matrix<T> Matrix<T>::operator-(){
 // transposion
 template<class T>
 Matrix<T> Matrix<T>::operator~(){
+    std::unordered_set<coords, pair_hash> to_delete;
+
     Matrix<T> copy(*this);
+    copy.columns = this->rows;
+    copy.rows = this->columns;
     for(auto& elem : copy.values){
         coords tmp_coords = elem.first;
         if (copy.values.find({tmp_coords.second, tmp_coords.first}) == copy.values.end()){
             copy.values[{tmp_coords.second, tmp_coords.first}] = elem.second;
-            copy.values.erase(tmp_coords);
+            //copy.values.erase(tmp_coords);
+            to_delete.insert(tmp_coords);
         } else if (tmp_coords.first < tmp_coords.second) {      // for 1 swap only
             T tmp_val = copy.values[{tmp_coords.second, tmp_coords.first}];
             copy.values[{tmp_coords.second, tmp_coords.first}] = copy.values[tmp_coords];
             copy.values[tmp_coords] = tmp_val;
         }
     }
+
+    for (auto& tmp: to_delete){
+        copy.values.erase(tmp);
+    }
+
     return copy;
 }
 
