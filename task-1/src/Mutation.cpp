@@ -3,38 +3,46 @@
 
 #include "Schedule.cpp"
 #include <random>
+#include <memory>
 
 template<class Ttask>
 class Mutation {
 public:
-    virtual void mutate(Solution<Ttask>& schedule) = 0;
+    virtual std::unique_ptr<Solution<Task>> mutate(const Solution<Ttask>& schedule) = 0;
+    virtual std::unique_ptr<Mutation<Ttask>> clone() const = 0;
     virtual ~Mutation() {};
 };
 
 
-class Mutator: public Mutation<Task>{
-public:
-    /* repeat (nTask / 4) times:
+/*  Algorithm:
+    *repeat (nTask / 4) times:
     *    proc1 = rand_proc(), proc2 = rand_proc()
-    *   for i % 3 == 0:  
+    *   for i % 3 != 0:  
     *     task1 = rand_task(proc1), task2 = rand_task(proc2)
     *     swap(task1, task2)
-    *   for i %% 3 != 0:
+    *   for i %% 3 == 0:
     *     task1 = rand_task(proc1)
-    *     move(task1, proc2)
+    *     move(task1, proc2.back)
     * 
-    * if (proc1.size == 0 && proc2.size != 0) 
+    ** if (proc1.size == 0 && proc2.size != 0) 
     *   proc2.back => proc1.back
-    */
-    void mutate(Solution<Task>& _schedule) override{
-        Schedule& schedule = static_cast<Schedule&>(_schedule);
-        std::vector<std::vector<Task>>& data = schedule.get_data(); 
+*/
+class Mutator: public Mutation<Task>{
+public:
+    std::unique_ptr<Mutation<Task>> clone() const override{
+        return std::make_unique<Mutator>(*this);
+    }
+
+    // RETURNS: std::unique_ptr<Schedule> (ambiguity due to unique_ptr)
+    std::unique_ptr<Solution<Task>> mutate(const Solution<Task>& _schedule) override{
+        std::unique_ptr<Schedule> sch_ptr = std::make_unique<Schedule>(_schedule);
+        std::vector<std::vector<Task>>& data = sch_ptr->get_data(); 
 
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> proc_distr(0, schedule.get_proc_number() - 1);
+        std::uniform_int_distribution<> proc_distr(0, sch_ptr->get_proc_number() - 1);
 
-        for (int i = 0; i < (schedule.get_task_number() / 4); i ++){
+        for (int i = 0; i < (sch_ptr->get_task_number() / 4); i ++){
             int proc1 = proc_distr(gen), proc2 = proc_distr(gen);
             int size1 = data[proc1].size(), size2 = data[proc2].size();
             if (size1 == 0 && size2 == 0){
@@ -67,6 +75,7 @@ public:
                 }
             }
         }
+        return sch_ptr;
     }
 private:
     Task pop_task(std::vector<Task>& proc_tasks, int idx){

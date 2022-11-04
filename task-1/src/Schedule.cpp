@@ -8,15 +8,21 @@
 #include <string>
 #include <exception>
 #include <random>
+#include <memory>
 
 
 template<class Ttask>
 class Solution{
 public:
     virtual long long get_criterion_val() const = 0;
+    virtual std::unique_ptr<Solution<Ttask>> clone() const = 0;
     virtual ~Solution() {};
 
     virtual std::vector<std::vector<Ttask>> get_data() const{
+        return data;
+    }
+
+    virtual std::vector<std::vector<Ttask>>& get_data(){
         return data;
     }
 
@@ -52,6 +58,25 @@ private:
 
 class Schedule: public Solution<Task>{
 public:
+    Schedule(){};
+
+    Schedule(const Solution<Task>& other){
+        nProc = other.get_proc_number(); 
+        nTask = other.get_task_number(); 
+        data = other.get_data();
+    };
+
+    Schedule& operator=(const Schedule& other){
+        nProc = other.nProc;
+        nTask = other.nTask;
+        data = other.data;
+        return *this;
+    }
+
+    std::unique_ptr<Solution<Task>> clone() const override {
+        return std::make_unique<Schedule>( *this ); 
+    }
+
     Schedule(const char* filename, bool randomize = false){
         // read from csv file, format described in src/Generator.cpp
         std::ifstream file_data = _open_file_safe(filename);
@@ -101,9 +126,6 @@ public:
         return res;
     }
 
-    std::vector<std::vector<Task>>& get_data(){
-        return data;
-    }
 
     // Criterion 2: total waiting time (sum completion time by all tasks)
     long long get_criterion_val() const override{

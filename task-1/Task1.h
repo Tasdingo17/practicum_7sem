@@ -1,0 +1,5 @@
+#include "src/Temperature.cpp"
+#include "src/Generator.cpp"
+#include "src/Schedule.cpp"
+#include "src/Mutation.cpp"
+#include "src/Annealing.cpp"

@@ -48,9 +48,8 @@ private:
     int curr_temp;
     Temperature_law_type law_type;
     Temperature_decrease_law* decr_law;
-public:
-    Temperature(int _start_temp, Temperature_law_type _law_type):
-    start_temp(_start_temp), curr_temp(_start_temp), law_type(_law_type) {
+
+    void create_law_by_type(){
         if (law_type == Temperature_law_type::BOLTZMANN){
             decr_law = new Boltzmann_law;
         } else if (law_type == Temperature_law_type::CAUCHY) {
@@ -58,6 +57,24 @@ public:
         } else if (law_type == Temperature_law_type::LOG) {
             decr_law = new Log_law;
         }
+    }
+public:
+    Temperature(int _start_temp, Temperature_law_type _law_type):
+    start_temp(_start_temp), curr_temp(_start_temp), law_type(_law_type) {
+        create_law_by_type();
+    }
+
+    Temperature(const Temperature& other):
+    start_temp(other.start_temp), curr_temp(other.curr_temp), law_type(other.law_type){
+        create_law_by_type();
+    }
+    
+    Temperature& operator=(const Temperature& other){
+        start_temp = other.start_temp;
+        curr_temp = other.curr_temp;
+        law_type = other.law_type;
+        create_law_by_type();
+        return *this;
     }
 
     int get_curr_temp() const {
