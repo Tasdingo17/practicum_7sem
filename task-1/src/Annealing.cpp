@@ -48,7 +48,6 @@ public:
             temperature.step(total_iter);
             total_iter++;
         }
-        std::cout << "here" << std::endl;
     }
 
     Solution<Ttask>* get_best_schedule(){
