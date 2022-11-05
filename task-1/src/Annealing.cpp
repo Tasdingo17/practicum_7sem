@@ -7,7 +7,7 @@
 #include <cmath>
 
 #define MAX_NON_BEST_ITER 100
-#define ITER_FOR_COOL_DOWN 5
+#define ITER_FOR_COOL_DOWN 10
 
 template <class Ttask>
 class Annealing{
@@ -52,6 +52,10 @@ public:
 
     Solution<Ttask>* get_best_schedule(){
         return best_schedule.get();
+    }
+
+    long long get_best_criterion() const{
+        return best_schedule->get_criterion_val();
     }
 private:
     std::shared_ptr<Solution<Ttask>> curr_schedule;
