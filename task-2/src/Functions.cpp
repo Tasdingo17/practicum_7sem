@@ -13,6 +13,10 @@ std::string IdentF::ToString() const{
 
 IdentF::IdentF(const std::initializer_list<double>& lst){};
 
+std::unique_ptr<TFunction> IdentF::clone() const{
+    return std::make_unique<IdentF>(*this);
+};
+
 // CONSTANT FUNCTION
 
 double ConstF::operator()(double x) const{
@@ -30,6 +34,10 @@ ConstF::ConstF(const std::initializer_list<double>& lst){
         throw std::invalid_argument("Wrong initializer_list size for Constant function");
     }
     val = *lst.begin();
+}
+
+std::unique_ptr<TFunction> ConstF::clone() const{
+    return std::make_unique<ConstF>(*this);
 }
 
 // Power function
@@ -51,6 +59,10 @@ PowerF::PowerF(const std::initializer_list<double>& lst){
     power = *lst.begin();
 }
 
+std::unique_ptr<TFunction> PowerF::clone() const{
+    return std::make_unique<PowerF>(*this);
+}
+
 // Exponent function
 
 double ExpF::operator()(double x) const{
@@ -63,6 +75,9 @@ std::string ExpF::ToString() const{
 
 ExpF::ExpF(const std::initializer_list<double>& lst){};
 
+std::unique_ptr<TFunction> ExpF::clone() const{
+    return std::make_unique<ExpF>(*this);
+}
 
 // Polynomial function
 
@@ -94,4 +109,52 @@ PolynomialF::PolynomialF(const std::initializer_list<double>& lst): coefs(lst){
     if (lst.size() == 0){
         throw std::invalid_argument("Coefs of polynom must be non-empty");
     }
+}
+
+std::unique_ptr<TFunction> PolynomialF::clone() const{
+    return std::make_unique<PolynomialF>(*this);
+}
+
+// Arithmetics
+
+TArithmFunc::TArithmFunc(const TFunction& _lhs, const TFunction& _rhs, OPERATION _oper):
+    lhs(_lhs.clone()), rhs(_rhs.clone()), oper(_oper) {};
+
+std::unique_ptr<TFunction> TArithmFunc::clone() const{
+    return std::make_unique<TArithmFunc>(*lhs, *rhs, oper);
+}
+
+double TArithmFunc::operator()(double x) const{
+    switch (oper){
+        case OPERATION::PLUS:
+            return (*lhs)(x) + (*rhs)(x);
+        case OPERATION::MINUS:
+            return (*lhs)(x) - (*rhs)(x);
+        case OPERATION::TIMES:
+            return (*lhs)(x) * (*rhs)(x);
+        case OPERATION::DIVIDE:
+            return (*lhs)(x) / (*rhs)(x);
+        default:    // unreachable
+            throw std::logic_error("Wrong operation");
+    }
+}
+
+std::string TArithmFunc::ToString() const{
+    std::string op;
+    switch(oper){
+        case OPERATION::PLUS:
+            op = " + ";
+            break;
+        case OPERATION::MINUS:
+            op = " - ";
+            break;
+        case OPERATION::TIMES:
+            op = " * ";
+            break;
+        case OPERATION::DIVIDE:
+            op = " / ";
+        default:    // unreachable
+            throw std::logic_error("Wrong operation");
+    }
+    return std::string("Arithmetic function:") + lhs->ToString() + op + rhs->ToString();
 }
