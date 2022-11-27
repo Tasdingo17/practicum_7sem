@@ -126,4 +126,19 @@ TArithmFunc operator/(const TFunction& lhs, const T& rhs) {
     }
 }
 
+
+/**
+ * @brief Find root of f(x) == 0.
+ * 
+ * "f(x) == 0 is equivalent to argmin(f(x)^2)".
+ * Find mininum by gradient descent with constant rate.
+ * @param f - arithmetic expression to find root of;
+ * @param x0 - initial solution value
+ * @param nIter - maximum number of iterations of gradiend descent
+ * @param rate - "convergence rate"
+ * @param eps - solution precision
+ * @return double - solution 
+ */
+double findRoot(const TFunction& f, double x0=0, unsigned nIter=100, double rate=0.1, double eps=0.00001);
+
 #endif
