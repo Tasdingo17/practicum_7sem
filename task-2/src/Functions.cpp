@@ -17,6 +17,10 @@ std::unique_ptr<TFunction> IdentF::clone() const{
     return std::make_unique<IdentF>(*this);
 };
 
+double IdentF::derivative(double x) const{
+    return 1;
+}
+
 // CONSTANT FUNCTION
 
 double ConstF::operator()(double x) const{
@@ -38,6 +42,10 @@ ConstF::ConstF(const std::initializer_list<double>& lst){
 
 std::unique_ptr<TFunction> ConstF::clone() const{
     return std::make_unique<ConstF>(*this);
+}
+
+double ConstF::derivative(double x) const{
+    return 0;
 }
 
 // Power function
@@ -63,6 +71,10 @@ std::unique_ptr<TFunction> PowerF::clone() const{
     return std::make_unique<PowerF>(*this);
 }
 
+double PowerF::derivative(double x) const{
+    return power * pow(x, power - 1);
+}
+
 // Exponent function
 
 double ExpF::operator()(double x) const{
@@ -77,6 +89,10 @@ ExpF::ExpF(const std::initializer_list<double>& lst){};
 
 std::unique_ptr<TFunction> ExpF::clone() const{
     return std::make_unique<ExpF>(*this);
+}
+
+double ExpF::derivative(double x) const{
+    return this->operator()(x);
 }
 
 // Polynomial function
@@ -113,6 +129,16 @@ PolynomialF::PolynomialF(const std::initializer_list<double>& lst): coefs(lst){
 
 std::unique_ptr<TFunction> PolynomialF::clone() const{
     return std::make_unique<PolynomialF>(*this);
+}
+
+double PolynomialF::derivative(double x) const{
+    double res = 0;
+    int n = this->coefs.size() - 1;
+    for (auto coef = coefs.rbegin(); coef != coefs.rend() - 1; coef++){
+        res = res * x + *coef * n;
+        n -= 1;
+    }
+    return res;
 }
 
 // Arithmetics
@@ -157,4 +183,21 @@ std::string TArithmFunc::ToString() const{
             throw std::logic_error("Wrong operation");
     }
     return std::string("Arithmetic function:") + lhs->ToString() + op + rhs->ToString();
+}
+
+double TArithmFunc::derivative(double x) const{
+    switch(oper){
+        case OPERATION::PLUS:
+            return lhs->derivative(x) + rhs->derivative(x);
+        case OPERATION::MINUS:
+            return lhs->derivative(x) - rhs->derivative(x);
+        case OPERATION::TIMES:
+            return lhs->derivative(x) * rhs->operator()(x) + lhs->operator()(x) * rhs->derivative(x);
+        case OPERATION::DIVIDE:
+            return (lhs->derivative(x) * rhs->operator()(x) - lhs->operator()(x) * rhs->derivative(x)) /
+                   (rhs->operator()(x) * rhs->operator()(x)); 
+        default:    // unreachable
+            throw std::logic_error("Wrong operation");
+    }
+    return 0;
 }

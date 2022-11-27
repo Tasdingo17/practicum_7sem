@@ -18,6 +18,7 @@ public:
     virtual double operator()(double x) const = 0;
     virtual std::string ToString() const = 0;
     virtual std::unique_ptr<TFunction> clone() const = 0;
+    virtual double derivative(double x) const = 0;
 };
 
 class TArithmFunc: public TFunction{
@@ -26,6 +27,7 @@ public:
     virtual double operator()(double x) const override;
     virtual std::string ToString() const override;
     virtual std::unique_ptr<TFunction> clone() const override;
+    virtual double derivative(double x) const override;
 private:
     std::unique_ptr<TFunction> lhs;
     std::unique_ptr<TFunction> rhs;
@@ -38,6 +40,7 @@ public:
     virtual std::string ToString() const;
     IdentF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
+    virtual double derivative(double x) const override;
 };
 
 class ConstF: public TFunction{
@@ -47,6 +50,7 @@ public:
     ConstF(double val);
     ConstF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
+    virtual double derivative(double x) const override;
 private:
     double val;
 };
@@ -58,6 +62,7 @@ public:
     PowerF(double val);
     PowerF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
+    virtual double derivative(double x) const override;
 private:
     double power;
 };
@@ -68,6 +73,7 @@ public:
     virtual std::string ToString() const;
     ExpF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
+    virtual double derivative(double x) const override;
 };
 
 class PolynomialF: public TFunction{
@@ -77,6 +83,7 @@ public:
     PolynomialF(const std::vector<double>& _coefs);
     PolynomialF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
+    virtual double derivative(double x) const override;
 private:
     std::vector<double> coefs;
 };
