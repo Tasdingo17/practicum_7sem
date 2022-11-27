@@ -16,7 +16,7 @@ class TFunction{
 public:
     virtual ~TFunction() = default;
     virtual double operator()(double x) const = 0;
-    virtual std::string ToString() const = 0;
+    virtual std::string ToString(const int precision=6) const = 0;
     virtual std::unique_ptr<TFunction> clone() const = 0;
     virtual double derivative(double x) const = 0;
 };
@@ -25,7 +25,7 @@ class TArithmFunc: public TFunction{
 public:
     TArithmFunc(const TFunction& _lhs, const TFunction& _rhs, OPERATION _oper);
     virtual double operator()(double x) const override;
-    virtual std::string ToString() const override;
+    virtual std::string ToString(const int precision=6) const override;
     virtual std::unique_ptr<TFunction> clone() const override;
     virtual double derivative(double x) const override;
 private:
@@ -37,7 +37,7 @@ private:
 class IdentF: public TFunction{
 public:
     virtual double operator()(double x) const override;
-    virtual std::string ToString() const;
+    virtual std::string ToString(const int precision=6) const;
     IdentF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
     virtual double derivative(double x) const override;
@@ -46,7 +46,7 @@ public:
 class ConstF: public TFunction{
 public:
     virtual double operator()(double x) const override;
-    virtual std::string ToString() const;
+    virtual std::string ToString(const int precision=6) const;
     ConstF(double val);
     ConstF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
@@ -58,7 +58,7 @@ private:
 class PowerF: public TFunction{
 public:
     virtual double operator()(double x) const override;
-    virtual std::string ToString() const;
+    virtual std::string ToString(const int precision=6) const;
     PowerF(double val);
     PowerF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
@@ -70,7 +70,7 @@ private:
 class ExpF: public TFunction{
 public:
     virtual double operator()(double x) const override;
-    virtual std::string ToString() const;
+    virtual std::string ToString(const int precision=6) const;
     ExpF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
     virtual double derivative(double x) const override;
@@ -79,7 +79,7 @@ public:
 class PolynomialF: public TFunction{
 public:
     virtual double operator()(double x) const override;
-    virtual std::string ToString() const;
+    virtual std::string ToString(const int precision=6) const;
     PolynomialF(const std::vector<double>& _coefs);
     PolynomialF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;

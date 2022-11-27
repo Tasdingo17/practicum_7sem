@@ -1,13 +1,22 @@
 #include "Functions.h"
 #include <cmath>
 #include <stdexcept>
+#include <sstream>
+
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n = 6){
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
+}
 
 // IDENT FUNCTION
 double IdentF::operator()(double x) const{
     return x;
 }
 
-std::string IdentF::ToString() const{
+std::string IdentF::ToString(const int precision) const{
     return std::string("f(x) = x");
 }
 
@@ -27,8 +36,8 @@ double ConstF::operator()(double x) const{
     return val;
 }
 
-std::string ConstF::ToString() const{
-    return std::string("f(x) = ") + std::to_string(val);
+std::string ConstF::ToString(const int precision) const{
+    return std::string("f(x) = ") + to_string_with_precision(val, precision);
 }
 
 ConstF::ConstF(double x): val(x) {};
@@ -54,8 +63,8 @@ double PowerF::operator()(double x) const{
     return pow(x, power);
 }
 
-std::string PowerF::ToString() const{
-    return std::string("f(x) = x^") + std::to_string(power);
+std::string PowerF::ToString(const int precision) const{
+    return std::string("f(x) = x^") + to_string_with_precision(power, precision);
 }
 
 PowerF::PowerF(double x): power(x) {};
@@ -81,7 +90,7 @@ double ExpF::operator()(double x) const{
     return exp(x);
 }
 
-std::string ExpF::ToString() const{
+std::string ExpF::ToString(const int precision) const{
     return std::string("f(x) = e^x");
 }
 
@@ -105,13 +114,15 @@ double PolynomialF::operator()(double x) const{
     return res;
 }
     
-std::string PolynomialF::ToString() const{
+std::string PolynomialF::ToString(const int precision) const{
     std::string output("f(x) = ");
     unsigned short i;
     for ( i = 0; i < coefs.size() - 1; i++){
-        output += std::to_string(coefs[i]) + std::string("*x^") + std::to_string(i) + " + ";
+        output += to_string_with_precision(coefs[i], precision) + 
+                  std::string("*x^") + std::to_string(i) + " + ";
     }
-    output += std::to_string(coefs[i]) + std::string("*x^") + std::to_string(i);
+    output += to_string_with_precision(coefs[i], precision) + 
+              std::string("*x^") + std::to_string(i);
     return output;
 }
 
@@ -165,7 +176,7 @@ double TArithmFunc::operator()(double x) const{
     }
 }
 
-std::string TArithmFunc::ToString() const{
+std::string TArithmFunc::ToString(const int precision) const{
     std::string op;
     switch(oper){
         case OPERATION::PLUS:
@@ -182,7 +193,8 @@ std::string TArithmFunc::ToString() const{
         default:    // unreachable
             throw std::logic_error("Wrong operation");
     }
-    return std::string("Arithmetic function:") + lhs->ToString() + op + rhs->ToString();
+    return std::string("Arithmetic function:") + lhs->ToString(precision) + 
+           op + rhs->ToString(precision);
 }
 
 double TArithmFunc::derivative(double x) const{
