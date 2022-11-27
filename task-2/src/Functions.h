@@ -38,6 +38,9 @@ class IdentF: public TFunction{
 public:
     virtual double operator()(double x) const override;
     virtual std::string ToString(const int precision=6) const;
+    IdentF() = default;
+    IdentF(const IdentF& other) = default;
+    ~IdentF() = default;
     IdentF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
     virtual double derivative(double x) const override;
@@ -71,6 +74,9 @@ class ExpF: public TFunction{
 public:
     virtual double operator()(double x) const override;
     virtual std::string ToString(const int precision=6) const;
+    ExpF() = default;
+    ExpF(const ExpF& other) = default;
+    ~ExpF() = default;
     ExpF(const std::initializer_list<double>& lst);
     virtual std::unique_ptr<TFunction> clone() const override;
     virtual double derivative(double x) const override;
