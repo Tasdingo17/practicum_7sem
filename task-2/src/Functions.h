@@ -142,9 +142,9 @@ TArithmFunc operator/(const TFunction& lhs, const T& rhs) {
  * @param x0 - initial solution value
  * @param nIter - maximum number of iterations of gradiend descent
  * @param rate - "convergence rate"
- * @param eps - solution precision
+ * param eps - solution precision(deprivated)
  * @return double - solution 
  */
-double findRoot(const TFunction& f, double x0=0, unsigned nIter=100, double rate=0.1, double eps=0.00001);
+double findRoot(const TFunction& f, double x0=0, unsigned nIter=100, double rate=0.1);//, double eps=0.00001);
 
 #endif
