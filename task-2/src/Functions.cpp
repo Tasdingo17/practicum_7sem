@@ -193,8 +193,7 @@ std::string TArithmFunc::ToString(const int precision) const{
         default:    // unreachable
             throw std::logic_error("Wrong operation");
     }
-    return std::string("Arithmetic function:") + lhs->ToString(precision) + 
-           op + rhs->ToString(precision);
+    return lhs->ToString(precision) + op + rhs->ToString(precision);
 }
 
 double TArithmFunc::derivative(double x) const{
