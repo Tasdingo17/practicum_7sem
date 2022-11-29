@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <stdexcept> 
 
 enum class OPERATION{
     PLUS,
