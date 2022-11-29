@@ -146,6 +146,6 @@ TArithmFunc operator/(const TFunction& lhs, const T& rhs) {
  * param eps - solution precision(deprivated)
  * @return double - solution 
  */
-double findRoot(const TFunction& f, double x0=0, unsigned nIter=100, double rate=0.1);//, double eps=0.00001);
+double findRoot(const TFunction& f, double x0=0, unsigned nIter=10000, double rate=0.01);//, double eps=0.00001);
 
 #endif

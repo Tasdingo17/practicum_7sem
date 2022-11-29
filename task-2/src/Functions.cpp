@@ -217,15 +217,21 @@ double TArithmFunc::derivative(double x) const{
 //#include <iostream>
 double findRoot(const TFunction& f, double _x0, unsigned nIter, double rate){//, double eps){
     double x_0 = _x0, x_1 = x_0;   // x0
-    auto g = f * f; // g = f(x)^2
+    //auto g = f * f; // g = f(x)^2
     unsigned iter = 0;
+    double x_best = x_0;
+    double f_best = std::abs(f(x_best));
     while (iter < nIter){
         x_0 = x_1;
-        x_1 = x_0 - rate * g.derivative(x_0);
+        x_1 = x_0 - rate * f.derivative(x_0) * (f(x_0) > 0 ? 1 : -1);
         //if (std::abs(x_1 - x_0) < eps){
         //    break;
-        //}  
+        //}
+        if (std::abs(f(x_1)) < f_best){
+            x_best = x_1;
+            f_best = std::abs(f(x_1));
+        }
         iter++;
     }
-    return x_1;
+    return x_best;
 }
