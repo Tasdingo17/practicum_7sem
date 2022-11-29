@@ -127,5 +127,4 @@ TEST(FuncTest, RootFinder){
     auto q2 = funcFactory.CreateObject("polynomial", {1, 2, 1});
     EXPECT_NEAR(findRoot(*q2, -3, 100000), -1, 0.01);
     EXPECT_DOUBLE_EQ(findRoot(*q2, -1, 10000), -1);
-    EXPECT_EQ(std::isnan(findRoot(*q2, -3, 100000, 1)), true);
 }
