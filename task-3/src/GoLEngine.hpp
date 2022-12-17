@@ -1,5 +1,5 @@
 #ifndef __GoLEngine__
-#define __GoLEngine
+#define __GoLEngine__
 
 #include <bitset>
 #include <fstream>
