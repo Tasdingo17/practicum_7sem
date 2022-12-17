@@ -2,8 +2,9 @@
 #define __GoLEngine
 
 #include <bitset>
-#include <iostream>
-//#include <unistd.h>
+#include <fstream>
+#include <stdexcept>
+#include <ncurses.h>
 #include "Sizes.h"
 
 class GoLEngine{
@@ -34,9 +35,11 @@ public:
     }
 
     std::bitset<WIDTH * HEIGHT> 
-    get_great_descedant(const std::bitset<WIDTH * HEIGHT>& individ, unsigned generations, bool visualize = false){
+    get_great_descedant(const std::bitset<WIDTH * HEIGHT>& individ, unsigned generations,
+                        bool visualize = false, int wait_time=5){
         field = individ;
         if (visualize){
+            init_visualize(wait_time);
             print_field();
         }
         for (unsigned i = 0; i < generations; i++){
@@ -45,10 +48,15 @@ public:
                 print_field();
             }
         }
+
+        if (visualize){
+            end_visualize();
+        }
         return field;            
     }
 
     static void print_field(const std::bitset<WIDTH * HEIGHT>& individ);
+    static void individ_to_file(const std::bitset<WIDTH * HEIGHT>& individ, const char* filename);
 
 private:
     const unsigned width;
@@ -58,6 +66,15 @@ private:
 
     int count_neightbours(const std::bitset<WIDTH * HEIGHT>& individ, int x, int y);
     void print_field() const;
+    
+    void init_visualize(int wait_time) {
+        initscr();
+        halfdelay(wait_time);   // waittime
+    }
+
+    void end_visualize(){
+        endwin();
+    }
 };
 
 int GoLEngine::count_neightbours(const std::bitset<WIDTH * HEIGHT>& individ, int x, int y){
@@ -122,19 +139,40 @@ int GoLEngine::count_neightbours(const std::bitset<WIDTH * HEIGHT>& individ, int
     return count;
 }
 
-// temporary; need good visualization with ncurses
+
 void GoLEngine::print_field() const{
     GoLEngine::print_field(field);
 }
 
+
 void GoLEngine::print_field(const std::bitset<WIDTH * HEIGHT>& individ){
     for(unsigned i = 0; i < WIDTH; i++){
         for (unsigned j=0; j < HEIGHT; j++){
-            std::cout << individ[i * WIDTH + j] << " ";
+            printw("%c ", (individ[i * WIDTH + j]) ? 'X' : '-');
         }
-        std::cout << std::endl;
+        printw("\n");
     }
-    std::cout << std::endl;
+    refresh();
+    getch();
+    clear();
+}
+
+
+void GoLEngine::individ_to_file(const std::bitset<WIDTH * HEIGHT>& individ, const char* filename){
+    std::ofstream file_data;
+    file_data.open(filename);
+    if (!file_data.is_open()){
+        throw std::runtime_error("Fail opening file: ");
+    }
+
+    for(unsigned i = 0; i < WIDTH; i++){
+        for (unsigned j=0; j < HEIGHT; j++){
+            file_data << ((individ[i * WIDTH + j]) ? 'X' : '-' ) << " ";
+        }
+        file_data << "\n";
+    }
+
+    file_data.close();
 }
 
 #endif // __GoLEngine__
