@@ -4,9 +4,9 @@
 #include <memory>
 #include <bitset>
 #include "GoLEngine.hpp"
+#include "Sizes.h"
 
 #define iterN 100
-#define PENALTY 2500
 
 template <size_t N>
 class SurvaivalFunc{

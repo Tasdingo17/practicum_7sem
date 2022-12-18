@@ -4,5 +4,6 @@
 #define WIDTH 50
 #define HEIGHT 50
 #define POPULATION_SIZE 100
+#define PENALTY (WIDTH * HEIGHT / 2)
 
 #endif
