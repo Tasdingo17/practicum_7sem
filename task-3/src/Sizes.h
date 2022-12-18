@@ -1,9 +1,9 @@
 #ifndef __Sizes__
 #define __Sizes__
 
-#define WIDTH 50
-#define HEIGHT 50
+#define WIDTH 20
+#define HEIGHT 20
 #define POPULATION_SIZE 100
-#define PENALTY (WIDTH * HEIGHT / 2)
+#define PENALTY (WIDTH * HEIGHT)
 
 #endif

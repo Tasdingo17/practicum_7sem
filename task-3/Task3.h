@@ -1,2 +1,7 @@
 #include "src/Crossing.cpp"
 #include "src/Mutation.cpp"
+#include "src/Sizes.h"
+#include "src/GoLEngine.hpp"
+#include "src/SurvaivalFunc.cpp"
+#include "src/Selection.cpp"
+#include "src/GeneticAlgo.cpp"
