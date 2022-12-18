@@ -13,7 +13,6 @@ public:
     virtual ~Mutation() {};
 };
 
-#include <iostream>
 template<size_t N>
 class Mutator: public Mutation<N>{
 public:

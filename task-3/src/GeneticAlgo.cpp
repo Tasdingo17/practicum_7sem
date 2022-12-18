@@ -30,9 +30,7 @@ public:
         
         while (stable_iter < MAX_NON_BEST_ITER){
             stable_iter++;
-            //std::cout << "stable_iter: " << stable_iter << std::endl;
             survaival_vals = std::move(population_survaival_func());
-            //survaival_vals = population_survaival_func();
 
             if (is_new_best(survaival_vals)){
                 stable_iter = 0;
@@ -42,7 +40,6 @@ public:
             population = std::move(population_crossing(selected_individs));
             population_mutation();
         }
-        //std::cout << "Done!" << best_individ << " " << best_res << std::endl;
     }
 
     std::bitset<Ngens> get_best_individ() const{
@@ -79,7 +76,6 @@ private:
             }
             population[i] = tmp_individ;
         }
-        //std::cout << "Inited population" << std::endl;
     }
 
     std::array<int, POPULATION_SIZE> 
@@ -87,19 +83,17 @@ private:
         std::array<int, POPULATION_SIZE> res;
         for (unsigned i = 0; i < POPULATION_SIZE; i++){
             res[i] = surv_func->get_criterion_val(population[i]);
-            //std::cout << "got criterion for i: " << i << std::endl; 
         }
         return res;
     }
 
     std::array<std::bitset<Ngens>, POPULATION_SIZE>
-    population_selection(const std::array<int, POPULATION_SIZE>& surv_func_vals){
+    population_selection(const std::array<int, POPULATION_SIZE>& surv_func_vals){  
         array_indices<POPULATION_SIZE> indices = selector->select(surv_func_vals);
         std::array<std::bitset<Ngens>, POPULATION_SIZE> selected_individs;
         for (unsigned i = 0; i < POPULATION_SIZE; i++){
             selected_individs[i] = population[indices[i]];
         }
-        //std::cout << "Selected population!" << std::endl;
         return selected_individs;
     }
 
@@ -114,23 +108,17 @@ private:
         decltype(population) new_population;
         double cross_prob = crosser->get_crossing_prob();
         while (k < POPULATION_SIZE - 1){    // as step is 2
-            //std::cout << "here1" << std::endl;
             do{
-            //    std::cout << "here2" << std::endl;
                 i = ind_dist(rng);
                 j = ind_dist(rng);
-            } while (i == j);
+            } while (selected_individs[i] == selected_individs[j]);
             if (cross_prob_dist(rng) < cross_prob){
                 auto descedants = crosser->cross(selected_individs[i], selected_individs[j]);
                 new_population[k] = std::move(descedants.first);
                 new_population[k+1] = std::move(descedants.second); 
                 k += 2;
-            } else {
-                //std::cout << "cross_prob_dist: " << cross_prob_dist(rng) << std::endl;
             }
         }
-
-        //std::cout << "Crossed population!" << std::endl;
         return new_population;
     }
 
@@ -138,7 +126,6 @@ private:
         for(unsigned i = 0; i < POPULATION_SIZE; i++){
             population[i] = mutator->mutate(population[i]);
         }
-        //std::cout << "Mutated population!" << std::endl;
     }
 
     // true if best changed, false else
