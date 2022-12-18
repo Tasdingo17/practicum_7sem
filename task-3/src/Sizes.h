@@ -1,7 +1,8 @@
 #ifndef __Sizes__
 #define __Sizes__
 
-#define WIDTH 4
-#define HEIGHT 4
+#define WIDTH 50
+#define HEIGHT 50
+#define POPULATION_SIZE 100
 
 #endif

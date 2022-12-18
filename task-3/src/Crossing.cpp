@@ -12,15 +12,10 @@ using pair_descendant = std::pair<std::bitset<N>, std::bitset<N>>;
 template<size_t N>
 class Crossing{
 public:
-    Crossing(double _cross_prob): cross_prob(_cross_prob) {};
     virtual pair_descendant<N> cross(const std::bitset<N>& lhs, const std::bitset<N>& rhs) = 0;
     virtual std::unique_ptr<Crossing<N>> clone() const = 0;
-    double get_crossing_prob(){
-        return cross_prob;
-    }
+    virtual double get_crossing_prob() const = 0;
     virtual ~Crossing() {};
-private:
-    double cross_prob;
 };
 
 template<size_t N>
@@ -43,6 +38,10 @@ public:
             descendant2[i] = lhs[i];
         }
         return {descendant1, descendant2};
+    }
+
+    double get_crossing_prob() const override{
+        return cross_prob;
     }
 private:
     unsigned int point1;
