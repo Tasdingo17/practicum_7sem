@@ -5,6 +5,8 @@
 #include <bitset>
 #include <array>
 #include <numeric>
+#include <algorithm>
+#include "Sizes.h"
 
 template<size_t N> 
 using array_indices = std::array<int, N>;
@@ -17,7 +19,6 @@ public:
     virtual array_indices<popSize> select(const std::array<int, popSize>& surv_func_vals) = 0;
 };
 
-//#include <iostream>
 
 /*Roulette selection*/
 template <size_t popSize>
@@ -34,19 +35,19 @@ public:
     */
     virtual array_indices<popSize> select(const std::array<int, popSize>& surv_func_vals) override{
         array_indices<popSize> res;
-        std::array<double, popSize> probs = std::move(vals_to_probs(surv_func_vals));
-        double tmp_start = 0.0;
-        double sum_of_probs = std::accumulate(probs.begin(), probs.end(), tmp_start);
+        std::array<int, popSize> minimize_vals = std::move(vals_for_minimize(surv_func_vals));
+        int tmp_start = 0;
+        int sum_of_vals = std::accumulate(minimize_vals.begin(), minimize_vals.end(), tmp_start);
 
         std::random_device dev;
         std::mt19937 rng(dev());
-        std::uniform_real_distribution<> selection_prob_dist(0, sum_of_probs);
+        std::uniform_int_distribution<> selection_val_dist(0, sum_of_vals);
 
         for (unsigned i = 0; i < popSize; i++){
-            double tmp_val = selection_prob_dist(rng);
+            int tmp_val = selection_val_dist(rng);
             unsigned idx = 0;
             for (idx = 0; idx < popSize; idx++){
-                tmp_val -= probs[idx];
+                tmp_val -= minimize_vals[idx];
                 if (tmp_val <= 0){
                     break;   
                 }
@@ -57,11 +58,12 @@ public:
         return res;
     }
 private:
-    std::array<double, popSize> vals_to_probs(const std::array<int, popSize>& surv_func_vals){
-        int total_sum = std::accumulate(surv_func_vals.begin(), surv_func_vals.end(), 0);
-        std::array<double, popSize> res;
+    std::array<int, popSize> vals_for_minimize(const std::array<int, popSize>& surv_func_vals){
+        int max_val = *std::max_element(surv_func_vals.begin(), surv_func_vals.end()) + 1;
+        std::array<int, popSize> res;
         for (unsigned i = 0; i < popSize; i++){
-            res[i] = 1 - 1.0 * surv_func_vals[i] / total_sum ;     // the lower res the higher prob
+            res[i] = max_val - surv_func_vals[i];
+            res[i] = (res[i] > 0) ? res[i] : 0;
         }
         return res;
     }
