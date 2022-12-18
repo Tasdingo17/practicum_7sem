@@ -1,5 +1,5 @@
-#ifndef __GenerAlgo__
-#define __GenerAlgo__
+#ifndef __GenAlgo__
+#define __GenAlgo__
 
 #include <cmath>
 #include <memory>
@@ -13,12 +13,10 @@
 
 #define MAX_NON_BEST_ITER 50
 
-#include <iostream>
-
 template <size_t Ngens>
-class GenerationAlgo{
+class GeneticAlgo{
 public:
-    GenerationAlgo(Selection<POPULATION_SIZE>& _selector, Mutation<Ngens>& _mutator,
+    GeneticAlgo(Selection<POPULATION_SIZE>& _selector, Mutation<Ngens>& _mutator,
                    Crossing<Ngens>& _crosser, SurvaivalFunc<Ngens>& _surv_func):
     selector(_selector.clone()), mutator(_mutator.clone()),
     crosser(_crosser.clone()), surv_func(_surv_func.clone()),
@@ -157,4 +155,4 @@ private:
     }
 };
 
-#endif  // __GenerAlgo__
+#endif  // __GenAlgo__
